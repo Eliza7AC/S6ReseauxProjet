@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 
-public class Client {
+public class Publisher {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -13,21 +13,22 @@ public class Client {
 
         log("Connecting to Server on port 1111...");
 
-        ArrayList<String> companyDetails = new ArrayList<String>();
-        companyDetails.add("Facebook");
-        companyDetails.add("Twitter");
-        companyDetails.add("IBM");
-        companyDetails.add("Google");
-        companyDetails.add("Crunchify");
 
-        for (String companyName : companyDetails) {
+        ArrayList<Requete> companySample = new ArrayList<>();
+        companySample.add(new Requete("Facebook!!!"));
+        companySample.add(new Requete("Twitter!!!"));
+        companySample.add(new Requete("IBM!!!"));
+        companySample.add(new Requete("Google!!!"));
+        companySample.add(new Requete("Crunchify!!!"));
 
-            byte[] message = new String(companyName).getBytes();
+
+        for (Requete r: companySample){
+            byte[] message = new String(r.getCorps()).getBytes();
             ByteBuffer buffer = ByteBuffer.wrap(message);
             clientChannel.write(buffer);
 
 
-            log("sending: " + companyName);
+            log("sending: " + r.getCorps());
             buffer.clear();
 
             // wait for 2 seconds before sending next message
@@ -42,7 +43,6 @@ public class Client {
     }
 
     private static void log(String str) {
-
         System.out.println(str);
     }
 

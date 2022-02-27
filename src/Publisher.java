@@ -1,34 +1,40 @@
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Publisher {
 
+
     public static void main(String[] args) throws IOException, InterruptedException {
 
+        String type = "PUBLISH";
+        String user = askForUser();
+        String body = askForBody();
+        Request request = new Request(type, user, body);
+
+
+        System.out.println("#########");
+        System.out.println(request.getHeader());
+        System.out.println(body);
+        System.out.println("#########");
+
+
         //  selectable channel for stream-oriented connecting sockets
-        SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress("localhost", 1111));
+        SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress("localhost", 1234));
 
-        log("Connecting to Server on port 1111...");
+        log("Connecting to Server on port 1234...");
 
-
-        ArrayList<Requete> companySample = new ArrayList<>();
-        companySample.add(new Requete("Facebook!!!"));
-        companySample.add(new Requete("Twitter!!!"));
-        companySample.add(new Requete("IBM!!!"));
-        companySample.add(new Requete("Google!!!"));
-        companySample.add(new Requete("Crunchify!!!"));
-
-
-        for (Requete r: companySample){
-            byte[] message = new String(r.getCorps()).getBytes();
+        for (String s : request.getInfos()){
+            byte[] message = s.getBytes();
             ByteBuffer buffer = ByteBuffer.wrap(message);
             clientChannel.write(buffer);
 
 
-            log("sending: " + r.getCorps());
+            log("sending: " + s);
             buffer.clear();
 
             // wait for 2 seconds before sending next message
@@ -42,8 +48,24 @@ public class Publisher {
         clientChannel.close();
     }
 
+
+
     private static void log(String str) {
         System.out.println(str);
     }
+
+    public static String askForUser(){
+        System.out.print("votre pseudo: ");
+        Scanner sc = new Scanner(System.in);
+        return sc.nextLine();
+    }
+
+    public static String askForBody(){
+        System.out.print("votre msg: ");
+        Scanner sc = new Scanner(System.in);
+        return sc.nextLine();
+    }
+
+
 
 }

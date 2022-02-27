@@ -14,7 +14,7 @@ public class Server {
 
         Selector selector = Selector.open(); // selector is open here
         ServerSocketChannel ssc = ServerSocketChannel.open();
-        ssc.bind(new InetSocketAddress("localhost", 1111));
+        ssc.bind(new InetSocketAddress("localhost", 1234));
         ssc.configureBlocking(false);
 
         int ops = ssc.validOps();
@@ -61,6 +61,9 @@ public class Server {
                     if(!result.equals("")){
                         log("Message received: " + result);
 //                        log("result.equals(\"\") => true");
+                        if (isUpperCase(result)){
+                            log("TYPE ===> " + result);
+                        }
                     }
                     // info - ferme co
                     if (result.equals("Crunchify")) {
@@ -77,5 +80,18 @@ public class Server {
     private static void log(String str) {
         System.out.println(str);
     }
+
+    public static boolean isUpperCase(String s)
+    {
+        for (int i=0; i<s.length(); i++)
+        {
+            if (!Character.isUpperCase(s.charAt(i)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 }

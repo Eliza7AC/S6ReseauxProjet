@@ -10,6 +10,8 @@ import java.util.Set;
 
 public class Server {
 
+    public static boolean requestReceived = false;
+
     public static void main(String[] args) throws IOException {
 
         Selector selector = Selector.open(); // selector is open here
@@ -45,17 +47,22 @@ public class Server {
                     acceptedChannel.configureBlocking(false);
 
                     // Operation-set bit for read operations
+                    acceptedChannel.register(selector, SelectionKey.OP_WRITE);
                     acceptedChannel.register(selector, SelectionKey.OP_READ);
                     log("Connection Accepted: " + acceptedChannel.getLocalAddress() + "\n");
 
+
                     // Tests whether this key's channel is ready for reading
-                } else if (myKey.isReadable()) {
+                }
+                if (myKey.isReadable()) {
 
                     SocketChannel readableChannel = (SocketChannel) myKey.channel();
 
                     ByteBuffer buffer = ByteBuffer.allocate(256);
                     readableChannel.read(buffer);
                     String result = new String(buffer.array()).trim();
+
+
 
                     // info - lit msg
                     if(!result.equals("")){
@@ -64,7 +71,28 @@ public class Server {
                         if (isUpperCase(result)){
                             log("TYPE ===> " + result);
                         }
+
+                        // check end of the request
+                        // INFO - answer to the end of the request
+                        if (result.endsWith("END")){
+                            requestReceived = true;
+                            System.out.println("requestReceived: " + requestReceived);
+
+                            SocketChannel client = (SocketChannel) myKey.channel();
+//                    ByteBuffer buffer = (ByteBuffer) myKey.attachment();
+
+                            ByteBuffer bufferAnswer = ByteBuffer.wrap("OK".getBytes());
+                            client.write(bufferAnswer);
+                            log("sending: " + "OK");
+                            bufferAnswer.clear();
+
+                        }
+
                     }
+
+
+
+
                     // info - ferme co
                     if (result.equals("Crunchify")) {
                         log("\nIt's time to close connection as we got last company name 'Crunchify'");
@@ -72,6 +100,17 @@ public class Server {
                         readableChannel.close();
                     }
                 }
+//                if (myKey.isWritable()){
+//                    SocketChannel client = (SocketChannel) myKey.channel();
+////                    ByteBuffer buffer = (ByteBuffer) myKey.attachment();
+//
+//                    ByteBuffer bufferAnswer = ByteBuffer.wrap("OK".getBytes());
+//                    client.write(bufferAnswer);
+//                    log("sending: " + "OK");
+//                    bufferAnswer.clear();
+//
+//                }
+
                 iteratorKeys.remove();
             }
         }

@@ -17,9 +17,7 @@ public class Request {
     private ArrayList<String> data = new ArrayList<>();
 
 
-
     public Request() {
-
         /**
          * ask for info to create request
          */
@@ -58,8 +56,9 @@ public class Request {
             System.out.println(">>>" + header);
         }
         else if (type.equals("RCV_MSG")){
-            optionId = askInfo("(option) id");
-            header = "RCV_MSG" + "since_id:" + optionId + "END";
+            optionId = askInfo("id");
+            header = "RCV_MSG " + "since_id:" + optionId + "END";
+            System.out.println(">>>" + header);
         }
     }
 

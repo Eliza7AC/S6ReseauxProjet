@@ -18,9 +18,6 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-
-
-
         Selector selector = Selector.open(); // selector is open here
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.bind(new InetSocketAddress("localhost", 12345));
@@ -32,8 +29,6 @@ public class Server {
         // A selection key is created each time a channel is registered with a selector.
         // A key remains valid until it is cancelled by invoking its cancel method, by closing its channel, or by closing its selector.
         SelectionKey selectKy = ssc.register(selector, ops, null);
-
-
 
 
 
@@ -52,6 +47,7 @@ public class Server {
         String body = "";
         String tag = "";
         String id = "";
+        String limit = "";
 
         /**
          * answer from the server to the client
@@ -98,14 +94,14 @@ public class Server {
 
 
                     /**
-                     * READING REQUEST
+                     * *********** READING REQUEST
+                     * *********** ANALYSING METADATA
                      */
                     if(!result.equals("")){
                         log("Message received: " + result);
-                        String infoReceivedS = result;
+//                        String infoReceivedS = result;
                         String[] infoReceivedArr = result.split(" ");
                         String firstWord = infoReceivedArr[0];
-
 
                         /**
                          * *********** READING HEADER
@@ -116,43 +112,59 @@ public class Server {
                             /**
                              * identifying author
                              */
-                            if(requestContains("@", infoReceivedArr)){
+                            if(requestContains("author:@", infoReceivedArr)){
                                 user = getInfoFromRequest("@", infoReceivedArr); // author:@aline
-                                String[] userString = user.split("@"); // author aline
+                                String[] userString = user.split("@"); // author: aline
                                 user = userString[1]; // aline
+                                System.out.println("user ==== " + user);
                             }
                             /**
                              * identifying tag
                              */
-                            if(requestContains("#", infoReceivedArr)){
-                                tag = getInfoFromRequest("#", infoReceivedArr); // tag:#tag
-                                String[] tagString = tag.split("#"); // tag: tag
-                                tag = tagString[1]; // tag
+                            if(requestContains("tag:#", infoReceivedArr)){
+                                tag = getInfoFromRequest("#", infoReceivedArr); // tag:#bonjour
+                                String[] tagString = tag.split("#"); // tag: bonjour
+                                tag = tagString[1]; // bonjour
+                                System.out.println("tag === " + tag);
                             }
                             /**
                              * identifying id
                              */
-                            System.out.println(requestContains("since_id:",infoReceivedArr));
+//                            System.out.println(requestContains("since_id:",infoReceivedArr));
                             if(requestContains("since_id:",infoReceivedArr)){
                                 id = getInfoFromRequest("since_id", infoReceivedArr); // since_id:5
                                 String[] idString = id.split("since_id:"); // 5
                                 id = idString[1];
-                                System.out.println("l'id est " + id);
+                                System.out.println("id === " + id);
                             }
+                            if(requestContains("msg_id:",infoReceivedArr)){
+                                id = getInfoFromRequest("msg_id", infoReceivedArr); // msg_id:5
+                                String[] idString = id.split("msg_id:"); // 5
+                                id = idString[1];
+                                System.out.println("id === " + id);
+                            }
+
+                            /**
+                             * identifying limit
+                             */
+                            if(requestContains("limit:",infoReceivedArr)){
+                                limit = getInfoFromRequest("limit:", infoReceivedArr); // limit:10
+                                String[] limitString = limit.split("limit:"); // 10
+                                limit = limitString[1];
+                                System.out.println("limit === " + limit);
+                            }
+
                         }
 
 
 
-
-
                         /**
-                         * *********** READING BODY - checking if "END" = end of the request
+                         * *********** CHECKING IF END OF THE REQUEST
+                         * *********** THEN PROCESSING THE REQUEST
                          */
                         if (result.endsWith("END")){
-
                             requestReceived = false; // to start over with next request
                             SocketChannel client = (SocketChannel) myKey.channel();
-
 
                             /**
                              * answer to client
@@ -167,23 +179,34 @@ public class Server {
                             }
                             else if(type.equals("RCV_IDS")){
 
-                                ArrayList<Message> results = new ArrayList<>();
+                                /** INFO
+                                 * processing by deep copy of the database in new ArrayList
+                                 * then removing all messages that doesn't match the options
+                                 */
+                                ArrayList<Message> results = Database.deepCopy();
+
                                 if (!user.isEmpty()){
+                                    System.out.println("if !user.isEmpty() " + user);
                                     Database.getMsgFromUser(user,results);
+                                    System.out.println(results.toString());
                                 }
-
-                                if (!id.isBlank()){
-                                    Integer idInt = Integer.parseInt(id);
-//                                    String messageId = "| id:";
+                                if (!tag.isEmpty()){
+                                    System.out.println("if !tag.isEmpty() " + tag);
+                                    Database.getMsgFromTag(tag,results);
+                                    System.out.println(results.toString());
+                                }
+                                if(!id.isEmpty()){
+                                    System.out.println(" if !id.isEmpty() " + id);
+                                    int idInt = Integer.parseInt(id);
+                                    System.out.println(idInt+2);
                                     Database.getMsgSinceId(idInt, results);
-//                                    for (Message m : results){
-//                                        System.out.println(m.toString() + " >> " + m.getId());
-//                                        messageId = messageId + " " + m.getId();
-//                                    }
-
+                                    System.out.println(results.toString());
                                 }
-//                                answer = "RCV_IDS " + messageId;
-//                                log("sending msg: " + answer);
+                                if(!limit.isEmpty()){
+                                    System.out.println(" if !limit.isEmpty() " + limit);
+                                    Database.getMsgWithLimit(limit, results);
+                                    System.out.println(results.toString());
+                                }
 
                                 /**
                                  * id results accroding to research
@@ -193,7 +216,10 @@ public class Server {
                                     answer = answer + " | " + m.getId();
                                 }
                                 results.clear();
+
+
                             }
+                            // TODO - doesn't work
                             else if(type.equals("RCV_MSG")){
                                 Integer idInt = Integer.parseInt(id);
                                 Message msg = Database.getMsgFromId(idInt);
@@ -213,6 +239,9 @@ public class Server {
                             type = "";
                             body = "";
                             tag = "";
+                            id = "";
+                            limit = "";
+
 
                         }
 
@@ -292,5 +321,6 @@ public class Server {
         }
         return false;
     }
+
 
 }

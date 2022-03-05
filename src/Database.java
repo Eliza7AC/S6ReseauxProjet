@@ -10,7 +10,7 @@ public class Database {
      */
     public static ArrayList<Message> storage = new ArrayList<>();
 
-    public static ArrayList<User> subscriptions = new ArrayList<>();
+//    public static ArrayList<User> subscriptions = new ArrayList<>();
 
 
     public static void addMsg(String msg, String user){
@@ -24,33 +24,61 @@ public class Database {
         }
     }
 
-    public static void getMsgFromUser(String user, ArrayList<Message> listOfMsg){
-        for(Message msg: storage){
-            if (user.equals(msg.getUser())){
-                listOfMsg.add(msg);
-            }
+
+
+    /**
+     * processing by deep copy of the database
+     * then removing all messages that doesn't match to options
+     */
+    public static ArrayList<Message> deepCopy(){
+        ArrayList<Message> newList = new ArrayList<>();
+        for(Message m : storage){
+            newList.add(m);
         }
+        return newList;
+    }
+
+    public static void getMsgFromUser(String user, ArrayList<Message> results){
+        results.removeIf(msg -> !msg.getUser().equals(user));
     }
 
 
-    public static void getMsgSinceId(int id, ArrayList<Message> listOfMsg){
-        for(Message msg: storage){
-            if (msg.getId() > id){
-                listOfMsg.add(msg);
-            }
-        }
-
+    public static void getMsgFromTag(String tag, ArrayList<Message> results){
+        results.removeIf(msg -> !msg.getMsg().contains(tag));
     }
+
+    public static void getMsgSinceId(int id, ArrayList<Message> results){
+        results.removeIf(msg -> msg.getId()<=id);
+    }
+
+    public static void getMsgWithLimit(String limit, ArrayList<Message> results){
+        int limitInt = Integer.parseInt(limit);
+
+        if (results.size() < limitInt){
+            return;
+        }
+        while (results.size()>limitInt){
+            results.remove(0);
+        }
+    }
+
 
     public static Message getMsgFromId(int id){
-
-        for (Message m : storage){
+        for (Message m: storage){
             if (m.getId() == id){
                 return m;
             }
         }
         return null;
     }
+
+
+
+
+
+
+
+
 
 
     // INFO - author:@user l’auteur des messages est @user
@@ -69,18 +97,7 @@ public class Database {
 //    }
 //
 //
-//    // INFO - tag:#tag les messages contiennent le mot clé #tag
-//    public ArrayList<String> getMsgFromTag(String tag){
-//        ArrayList<String> msgWithTag = new ArrayList<>();
-//
-//        for (int i = 0; i < dataBase.size(); i++) {
-//            String msgScanned = dataBase.get(i).get(1);
-//            if (msgScanned.contains(tag)){
-//                msgWithTag.add(msgScanned);
-//            }
-//        }
-//        return msgWithTag;
-//    }
+
 //
 //    // INFO - since_id:id les messages ont été publiés après le message dont l’identifiant est id
 //    public ArrayList<String> getMsgAfter(int id){
@@ -92,8 +109,6 @@ public class Database {
 //        }
 //        return msgAfter;
 //    }
-
-    // INFO - fds
 
 
 }

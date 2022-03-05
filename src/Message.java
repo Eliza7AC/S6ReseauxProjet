@@ -4,7 +4,8 @@ public class Message {
     String msg;
     String user;
 
-    public Message(String msg, String user) {
+    public Message(String msg, String user, int id) {
+        this.id = id;
         this.msg = msg;
         this.user = user;
     }
@@ -13,7 +14,7 @@ public class Message {
         return msg;
     }
 
-    public String user(){
+    public String getUser(){
         return user;
     }
 
@@ -22,6 +23,6 @@ public class Message {
     }
 
     public String toString(){
-        return "id: " + id + " | msg: " + msg + " | user: " + user;
+        return "{ id: " + id + " | msg: " + msg + " | user: " + user + "}";
     }
 }

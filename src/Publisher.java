@@ -5,7 +5,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Client {
+public class Publisher {
 
     /**
      * types:
@@ -17,6 +17,12 @@ public class Client {
     public static String header; // PUBLISH author:@user
     public static String body;
 
+    public static String optionUser = "";
+    public static String optionTag = "";
+    public static String optionId = "";
+    public static String optionLimit = "";
+
+
     public static ArrayList<String> request = new ArrayList<>();
 
 
@@ -26,39 +32,51 @@ public class Client {
          * connection to server
          * with selectable channel for stream-oriented connecting sockets
          */
-        SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress("localhost", 1234));
-        log("--- Connecting to Server on port 1234...");
+        SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress("localhost", 12345));
+        log("--- Connecting to Server on port 12345...");
 
 
         /**
          * ask for info to create request
-         * @type (once)
-         * @user (once)
-         * @body (multiple times)
          */
         String type = askInfo("TYPE"); // for example: PUBLISH
 
         if (type.equals("PUBLISH")){
             user = askInfo("USER");
-            body = askInfo("BODY")+"END";
             header = type.toUpperCase()+" "+"author:@"+user;
+            body = askInfo("BODY")+"END";
 
             request.add(header);
             request.add(body);
         }
-
-        // TODO
         else if (type.equals("RCV_IDS")){
-            user = askInfo("USER");
-            body = askInfo("BODY")+"END";
-            header = type.toUpperCase()+" "+"author:@"+user;
+            optionUser = askInfo("(option) user");
+            optionTag = askInfo("(option) tag");
+            optionId = askInfo("(option) id");
+            optionLimit = askInfo("(option) limit");
 
+            header = type.toUpperCase()+" ";
+
+            if (!optionUser.isEmpty()){
+                header = header + "author:@"+optionUser + " ";
+            }
+            if (!optionTag.isEmpty()){
+                header = header + "tag:#" + optionTag + " ";
+            }
+            if (!optionId.isEmpty()){
+                header = header + "since_id:" + optionId + " ";
+            }
+            if (!optionLimit.isEmpty()){
+                header = header + "limit:" + optionLimit + " ";
+            }
+            header = header + "END";
+            request.add(header);
+            System.out.println(">>>" + header);
         }
-
-
-//        String user = askInfo("USER");
-//        String body = askInfo("BODY")+"END";
-//        Request request = new Request(type, user, body);
+        else if (type.equals("RCV_MSG")){
+            optionId = askInfo("(option) id");
+            header = "RCV_MSG" + "since_id:" + optionId + "END";
+        }
 
 
 
@@ -78,10 +96,11 @@ public class Client {
 
 
         /**
-         * sum-up of the request sent
+         * sum-up of the request sent and clearing request
          */
         System.out.println(request.toString());
 //        printRequest(request);
+        request.clear();
 
 
 
@@ -92,9 +111,13 @@ public class Client {
         clientChannel.read(buffer);
         String result = new String(buffer.array()).trim();
         System.out.println("result : " + result);
+        System.out.println(" ");
+
+        if (result.equals("END")){
+            clientChannel.close();
+        }
 
 
-        clientChannel.close();
 
     }
 
@@ -114,15 +137,15 @@ public class Client {
         return sc.nextLine();
     }
 
-    public static String requestToString(Request request){
-         return new String(
-                 "### " + request.getHeader() + "\n" +
-                 "### " + request.getBody() + "\n");
-    }
+//    public static String requestToString(Request request){
+//         return new String(
+//                 "### " + request.getHeader() + "\n" +
+//                 "### " + request.getBody() + "\n");
+//    }
 
-    public static void printRequest(Request request){
-        System.out.println(requestToString(request));
-    }
+//    public static void printRequest(Request request){
+//        System.out.println(requestToString(request));
+//    }
 
     public static boolean userIsConnected(){
         return true;

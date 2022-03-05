@@ -14,11 +14,16 @@ public class Server {
 
     public static boolean requestReceived = false;
 
+    public static ArrayList<String> headers;
+
     public static void main(String[] args) throws IOException {
+
+
+
 
         Selector selector = Selector.open(); // selector is open here
         ServerSocketChannel ssc = ServerSocketChannel.open();
-        ssc.bind(new InetSocketAddress("localhost", 1234));
+        ssc.bind(new InetSocketAddress("localhost", 12345));
         ssc.configureBlocking(false);
 
         int ops = ssc.validOps();
@@ -30,6 +35,15 @@ public class Server {
 
 
 
+
+
+        headers = new ArrayList<>();
+        headers.add("PUBLISH");
+        headers.add("RCV_IDS");
+        headers.add("RCV_MSG");
+        headers.add("REPLY");
+        headers.add("REPUBLISH");
+
         /**
          * saving info received from client
          */
@@ -37,6 +51,7 @@ public class Server {
         String type = "";
         String body = "";
         String tag = "";
+        String id = "";
 
         /**
          * answer from the server to the client
@@ -91,12 +106,12 @@ public class Server {
                         String[] infoReceivedArr = result.split(" ");
                         String firstWord = infoReceivedArr[0];
 
+
                         /**
                          * *********** READING HEADER
                          */
-                        if(isUpperCase(firstWord)){
-                            type = infoReceivedArr[0];
-                            System.out.println("THIS IS UPPERCASE = " + infoReceivedArr);
+                        if(isHeader(firstWord)){
+                            type = firstWord;
 
                             /**
                              * identifying author
@@ -114,6 +129,16 @@ public class Server {
                                 String[] tagString = tag.split("#"); // tag: tag
                                 tag = tagString[1]; // tag
                             }
+                            /**
+                             * identifying id
+                             */
+                            System.out.println(requestContains("since_id:",infoReceivedArr));
+                            if(requestContains("since_id:",infoReceivedArr)){
+                                id = getInfoFromRequest("since_id", infoReceivedArr); // since_id:5
+                                String[] idString = id.split("since_id:"); // 5
+                                id = idString[1];
+                                System.out.println("l'id est " + id);
+                            }
                         }
 
 
@@ -125,31 +150,69 @@ public class Server {
                          */
                         if (result.endsWith("END")){
 
-                            /**
-                             * adding msg to database
-                             */
-                            body = result.substring(0,result.length()-3);
-                            Database.addMsg(body,user);
-                            System.out.println("database: " + Database.storage.toString());
-
-
                             requestReceived = false; // to start over with next request
                             SocketChannel client = (SocketChannel) myKey.channel();
 
 
                             /**
-                             * sending answer to client
+                             * answer to client
                              */
+                            ByteBuffer bufferAnswer = ByteBuffer.wrap(answer.getBytes());
+
                             if(type.equals("PUBLISH")){
+                                body = result.substring(0,result.length()-3);
+                                Database.addMsg(body,user);
+                                System.out.println("database: " + Database.storage.toString());
                                 answer = "OK";
                             }
-                            if(type.equals("RCV_IDS")){
-                                answer = "MSG_IDS";
+                            else if(type.equals("RCV_IDS")){
+
+                                ArrayList<Message> results = new ArrayList<>();
+                                if (!user.isEmpty()){
+                                    Database.getMsgFromUser(user,results);
+                                }
+
+                                if (!id.isBlank()){
+                                    Integer idInt = Integer.parseInt(id);
+//                                    String messageId = "| id:";
+                                    Database.getMsgSinceId(idInt, results);
+//                                    for (Message m : results){
+//                                        System.out.println(m.toString() + " >> " + m.getId());
+//                                        messageId = messageId + " " + m.getId();
+//                                    }
+
+                                }
+//                                answer = "RCV_IDS " + messageId;
+//                                log("sending msg: " + answer);
+
+                                /**
+                                 * id results accroding to research
+                                 */
+                                answer = "RCV_IDS ";
+                                for (Message m : results){
+                                    answer = answer + " | " + m.getId();
+                                }
+                                results.clear();
                             }
-                            ByteBuffer bufferAnswer = ByteBuffer.wrap(answer.getBytes());
+                            else if(type.equals("RCV_MSG")){
+                                Integer idInt = Integer.parseInt(id);
+                                Message msg = Database.getMsgFromId(idInt);
+                                answer = "MSG " + msg.getMsg();
+                            }
+
+                            bufferAnswer = ByteBuffer.wrap(answer.getBytes());
                             client.write(bufferAnswer);
                             log("sending answer: " + answer);
+
+
+                            /**
+                             * clearing all previous infos
+                             */
                             bufferAnswer.clear();
+                            user = "";
+                            type = "";
+                            body = "";
+                            tag = "";
 
                         }
 
@@ -161,7 +224,6 @@ public class Server {
                      */
                     if (result.equals("EXIT")) {
                         log("\ntime to close connection");
-                        log("\nServer will keep running. Try running client again to establish new connection");
                         readableChannel.close();
                     }
                 }
@@ -221,5 +283,14 @@ public class Server {
         return null;
     }
 
+
+    public static boolean isHeader(String s){
+        for(String header: headers){
+            if (s.equals(header)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

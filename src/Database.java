@@ -12,8 +12,8 @@ public class Database {
 
 
     public static void addMsg(String msg, String user){
-        int id = storage.size()-1; // final index of the list
-        Message message = new Message(msg,user);
+        int id = storage.size(); // final index of the list
+        Message message = new Message(msg,user, id);
         storage.add(message);
     }
 
@@ -28,12 +28,30 @@ public class Database {
 //        storage.add(msg);
 //    }
 
+    public static void getMsgFromUser(String user, ArrayList<Message> listOfMsg){
+        for(Message msg: storage){
+            if (user.equals(msg.getUser())){
+                listOfMsg.add(msg);
+            }
+        }
 
-    public String getMsgFromId(int id){
+    }
+
+
+    public static void getMsgSinceId(int id, ArrayList<Message> listOfMsg){
+        for(Message msg: storage){
+            if (msg.getId() > id){
+                listOfMsg.add(msg);
+            }
+        }
+
+    }
+
+    public static Message getMsgFromId(int id){
 
         for (Message m : storage){
             if (m.getId() == id){
-                return m.getMsg();
+                return m;
             }
         }
         return null;

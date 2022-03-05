@@ -2,20 +2,20 @@ public class Message {
 
     int id;
     String msg;
-    String user;
+    User user;
 
     public Message(String msg, String user, int id) {
         this.id = id;
         this.msg = msg;
-        this.user = user;
+        this.user = new User(user);
     }
 
     public String getMsg(){
         return msg;
     }
 
-    public String getUser(){
-        return user;
+    public User getUser(){
+        return this.user;
     }
 
     public int getId(){

@@ -4,17 +4,18 @@ public class Database {
 
 
     /**
-     * stored by chronological order
+     * messages stored by chronological order
      * starts with the older msg
      * ends with the most recent msg
      */
     public static ArrayList<Message> storage = new ArrayList<>();
 
+    public static ArrayList<User> subscriptions = new ArrayList<>();
+
 
     public static void addMsg(String msg, String user){
         int id = storage.size(); // final index of the list
-        Message message = new Message(msg,user, id);
-        storage.add(message);
+        storage.add(new Message(msg,user, id));
     }
 
     public static void showDatabase(){
@@ -23,18 +24,12 @@ public class Database {
         }
     }
 
-
-//    public static void addMsg(Message msg){
-//        storage.add(msg);
-//    }
-
     public static void getMsgFromUser(String user, ArrayList<Message> listOfMsg){
         for(Message msg: storage){
             if (user.equals(msg.getUser())){
                 listOfMsg.add(msg);
             }
         }
-
     }
 
 

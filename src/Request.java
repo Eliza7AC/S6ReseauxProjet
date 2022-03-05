@@ -1,48 +1,91 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Request {
 
-    /**
-     * types:
-     * sent from clients: PUBLISH, REPLY, REPUBLISH, (UN)SUBSCRIBE
-     * sent from server: OK, ERROR
-     */
 
-    String type; // PUBLISH
-    String user; // @user
-    String header; // PUBLISH author:@user
-    String body;
+    private String type; // PUBLISH
+    private String user; // @user
+    private String header; // PUBLISH author:@user
+    private String body;
 
-    ArrayList<String> infos; // in order to iterate through array when sending infos to the server
+    private String optionUser = "";
+    private String optionTag = "";
+    private String optionId = "";
+    private String optionLimit = "";
+
+    private ArrayList<String> data = new ArrayList<>();
 
 
-    // info - PUBLISH
-    public Request(String type, String user, String body) {
-        this.type = type;
-        this.user = user;
-        this.header = type.toUpperCase()+" "+"author:@"+user; // PUBLISH author:@user
-        this.body = body;
 
-        this.infos = new ArrayList<>();
-//        infos.add(type);
-//        infos.add(user);
-        infos.add(header);
-        infos.add(body);
+    public Request() {
+
+        /**
+         * ask for info to create request
+         */
+        String type = askInfo("TYPE"); // for example: PUBLISH
+
+        if (type.equals("PUBLISH")){
+            user = askInfo("USER");
+            header = type.toUpperCase()+" "+"author:@"+user;
+            body = askInfo("BODY")+"END";
+
+            data.add(header);
+            data.add(body);
+        }
+        else if (type.equals("RCV_IDS")){
+            optionUser = askInfo("(option) user");
+            optionTag = askInfo("(option) tag");
+            optionId = askInfo("(option) id");
+            optionLimit = askInfo("(option) limit");
+
+            header = type.toUpperCase()+" ";
+
+            if (!optionUser.isEmpty()){
+                header = header + "author:@"+optionUser + " ";
+            }
+            if (!optionTag.isEmpty()){
+                header = header + "tag:#" + optionTag + " ";
+            }
+            if (!optionId.isEmpty()){
+                header = header + "since_id:" + optionId + " ";
+            }
+            if (!optionLimit.isEmpty()){
+                header = header + "limit:" + optionLimit + " ";
+            }
+            header = header + "END";
+            data.add(header);
+            System.out.println(">>>" + header);
+        }
+        else if (type.equals("RCV_MSG")){
+            optionId = askInfo("(option) id");
+            header = "RCV_MSG" + "since_id:" + optionId + "END";
+        }
     }
 
-    public Request(String msg){
-        this.body = msg;
+
+
+
+
+    public static String askInfo(String info){
+        System.out.print(info + " > ");
+        Scanner sc = new Scanner(System.in);
+        return sc.nextLine();
     }
 
-    public String getBody(){
-        return this.body;
+    public String getType() {
+        return type;
     }
 
-    public String getHeader() {
-        return header;
+    public ArrayList<String> getData() {
+        return data;
     }
 
-    public ArrayList<String> getInfos(){
-        return infos;
+    public String toString(){
+        return "### " + header + "\n"
+                + "### " + body;
     }
+
+
+
 }

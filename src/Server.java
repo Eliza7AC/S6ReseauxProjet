@@ -1,3 +1,4 @@
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -5,6 +6,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -25,6 +27,22 @@ public class Server {
         // A selection key is created each time a channel is registered with a selector.
         // A key remains valid until it is cancelled by invoking its cancel method, by closing its channel, or by closing its selector.
         SelectionKey selectKy = ssc.register(selector, ops, null);
+
+
+
+        /**
+         * saving info received from client
+         */
+        String user = "";
+        String type = "";
+        String body = "";
+
+        /**
+         * answer from the server to the client
+         */
+        String answer = "plop";
+
+
 
         while (true) {
 //            log("I'm a server and I'm waiting for new connection and buffer select...");
@@ -63,27 +81,70 @@ public class Server {
                     String result = new String(buffer.array()).trim();
 
 
-
-                    // info - lit msg
+                    /**
+                     * reads request received
+                     */
                     if(!result.equals("")){
                         log("Message received: " + result);
-//                        log("result.equals(\"\") => true");
-                        if (isUpperCase(result)){
-                            log("TYPE ===> " + result);
+                        String infoReceivedS = result;
+                        String[] infoReceivedArr = result.split(" ");
+                        String firstWord = infoReceivedArr[0];
+
+                        /**
+                         * identifying request type
+                         */
+                        if(isUpperCase(firstWord)){
+                            type = infoReceivedArr[0];
+                            System.out.println("THIS IS UPPERCASE = " + infoReceivedArr);
+                        }
+//                        if (isUpperCase(result)){
+//                            type = result;
+//                            log("RESULT ===> " + result + " | TYPE = " + type);
+//                        }
+                        /**
+                         * identifying author
+                         */
+                        if(requestContains("@", infoReceivedArr)){
+                            user = getInfoFromRequest("@", infoReceivedArr); // author:@aline
+                            String[] userString = user.split("@"); // author aline
+                            user = userString[1]; // aline
+                            System.out.println("user -------->>>>>" + user);
                         }
 
-                        // check end of the request
-                        // INFO - answer to the end of the request
+
+
+                        // TODO
+//                        Message msg = new Message()
+//                        Database.storage()
+
+
+                        /**
+                         * identifying msg - checking if end of the request
+                         */
                         if (result.endsWith("END")){
-                            requestReceived = true;
-                            System.out.println("requestReceived: " + requestReceived);
 
+                            body = result.substring(0,result.length()-3);
+
+                            Database.addMsg(body,user);
+                            System.out.println("database: " + Database.storage.toString());
+
+
+                            requestReceived = false; // to start over with next request
                             SocketChannel client = (SocketChannel) myKey.channel();
-//                    ByteBuffer buffer = (ByteBuffer) myKey.attachment();
 
-                            ByteBuffer bufferAnswer = ByteBuffer.wrap("OK".getBytes());
+
+                            /**
+                             * sending answer to client
+                             */
+                            if(type.equals("PUBLISH")){
+                                answer = "OK";
+                            }
+                            if(type.equals("RCV_IDS")){
+                                answer = "MSG_IDS";
+                            }
+                            ByteBuffer bufferAnswer = ByteBuffer.wrap(answer.getBytes());
                             client.write(bufferAnswer);
-                            log("sending: " + "OK");
+                            log("sending answer: " + answer);
                             bufferAnswer.clear();
 
                         }
@@ -91,15 +152,20 @@ public class Server {
                     }
 
 
-
-
-                    // info - ferme co
+                    /**
+                     * closing connexion
+                     */
                     if (result.equals("Crunchify")) {
                         log("\nIt's time to close connection as we got last company name 'Crunchify'");
                         log("\nServer will keep running. Try running client again to establish new connection");
                         readableChannel.close();
                     }
                 }
+
+
+
+
+
 //                if (myKey.isWritable()){
 //                    SocketChannel client = (SocketChannel) myKey.channel();
 ////                    ByteBuffer buffer = (ByteBuffer) myKey.attachment();
@@ -130,6 +196,25 @@ public class Server {
             }
         }
         return true;
+    }
+
+
+    public static boolean requestContains(String pattern, String[] requestReceived){
+        for(String s: requestReceived){
+            if (s.contains(pattern)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String getInfoFromRequest(String pattern, String[] requestReceived){
+        for(String s: requestReceived){
+            if (s.contains(pattern)){
+                return s;
+            }
+        }
+        return null;
     }
 
 

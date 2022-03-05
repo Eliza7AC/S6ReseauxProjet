@@ -24,8 +24,9 @@ public class Request {
         this.body = body;
 
         this.infos = new ArrayList<>();
-        infos.add(type);
-        infos.add(user);
+//        infos.add(type);
+//        infos.add(user);
+        infos.add(header);
         infos.add(body);
     }
 

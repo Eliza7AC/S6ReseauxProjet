@@ -1,0 +1,11 @@
+To see comments in right colors, please do the following:
+
+Go to:
+1) "File" tab
+2) "Settings..." tab
+3) select "Editor"
+4) and then "TODO" section
+
+5)Create a new pattern by adding the following infos:
+pattern: \bINFO\b.*
+foreground: 4183C0

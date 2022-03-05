@@ -2,48 +2,106 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Client {
 
+
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        //  selectable channel for stream-oriented connecting sockets
-        SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress("localhost", 1111));
+        /**
+         * connection to server
+         * with selectable channel for stream-oriented connecting sockets
+         */
+        SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress("localhost", 1234));
+        log("--- Connecting to Server on port 1234...");
 
-        log("Connecting to Server on port 1111...");
 
-        ArrayList<String> companyDetails = new ArrayList<String>();
-        companyDetails.add("Facebook");
-        companyDetails.add("Twitter");
-        companyDetails.add("IBM");
-        companyDetails.add("Google");
-        companyDetails.add("Crunchify");
+        /**
+         * ask for info to create request
+         * @type (once)
+         * @user (once)
+         * @body (multiple times)
+         */
+        String type = askInfo("TYPE"); // for example: PUBLISH
+        String user = askInfo("USER");
+        String body = askInfo("BODY")+"END";
+        Request request = new Request(type, user, body);
 
-        for (String companyName : companyDetails) {
 
-            byte[] message = new String(companyName).getBytes();
+        /**
+         * sending info of request to server
+         */
+        for (String s : request.getInfos()){
+            byte[] message = s.getBytes();
             ByteBuffer buffer = ByteBuffer.wrap(message);
             clientChannel.write(buffer);
-
-
-            log("sending: " + companyName);
+            log("sending: " + s);
             buffer.clear();
 
-            // wait for 2 seconds before sending next message
-            Thread.sleep(2000);
+            // wait for 1 sec before sending next message
+            Thread.sleep(1000);
         }
 
 
-        // close(): Closes this channel.
-        // If the channel has already been closed then this method returns immediately.
-        // Otherwise it marks the channel as closed and then invokes the implCloseChannel method in order to complete the close operation.
+        /**
+         * sum-up of the request sent
+         */
+        printRequest(request);
+
+
+
+        /**
+         * reading answer from server
+         */
+        ByteBuffer buffer = ByteBuffer.allocate(256);
+        clientChannel.read(buffer);
+        String result = new String(buffer.array()).trim();
+        System.out.println("result : " + result);
+
+
         clientChannel.close();
+
     }
+
+
+
+
+
+
 
     private static void log(String str) {
-
         System.out.println(str);
     }
+
+    public static String askInfo(String info){
+        System.out.print(info + " > ");
+        Scanner sc = new Scanner(System.in);
+        return sc.nextLine();
+    }
+
+    public static String requestToString(Request request){
+         return new String(
+                 "### " + request.getHeader() + "\n" +
+                 "### " + request.getBody() + "\n");
+    }
+
+    public static void printRequest(Request request){
+        System.out.println(requestToString(request));
+    }
+
+    public static boolean userIsConnected(){
+        return true;
+    }
+
+    public static void send(String infoToSend, SocketChannel clientChannel) throws IOException {
+        byte[] message = infoToSend.getBytes();
+        ByteBuffer buffer = ByteBuffer.wrap(message);
+        clientChannel.write(buffer);
+//        log("sending: " + infoToSend);
+        buffer.clear();
+    }
+
+
 
 }

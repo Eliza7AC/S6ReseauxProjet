@@ -3,6 +3,11 @@ import java.util.ArrayList;
 public class Database {
 
 
+    /**
+     * stored by chronological order
+     * starts with the older msg
+     * ends with the most recent msg
+     */
     public static ArrayList<Message> storage = new ArrayList<>();
 
 

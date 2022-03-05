@@ -2,9 +2,22 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client {
+
+    /**
+     * types:
+     * sent from clients: PUBLISH, REPLY, REPUBLISH, (UN)SUBSCRIBE
+     * sent from server: OK, ERROR
+     */
+    public static String type; // PUBLISH
+    public static String user; // @user
+    public static String header; // PUBLISH author:@user
+    public static String body;
+
+    public static ArrayList<String> request = new ArrayList<>();
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -24,15 +37,35 @@ public class Client {
          * @body (multiple times)
          */
         String type = askInfo("TYPE"); // for example: PUBLISH
-        String user = askInfo("USER");
-        String body = askInfo("BODY")+"END";
-        Request request = new Request(type, user, body);
+
+        if (type.equals("PUBLISH")){
+            user = askInfo("USER");
+            body = askInfo("BODY")+"END";
+            header = type.toUpperCase()+" "+"author:@"+user;
+
+            request.add(header);
+            request.add(body);
+        }
+
+        // TODO
+        else if (type.equals("RCV_IDS")){
+            user = askInfo("USER");
+            body = askInfo("BODY")+"END";
+            header = type.toUpperCase()+" "+"author:@"+user;
+
+        }
+
+
+//        String user = askInfo("USER");
+//        String body = askInfo("BODY")+"END";
+//        Request request = new Request(type, user, body);
+
 
 
         /**
          * sending info of request to server
          */
-        for (String s : request.getInfos()){
+        for (String s : request){
             byte[] message = s.getBytes();
             ByteBuffer buffer = ByteBuffer.wrap(message);
             clientChannel.write(buffer);
@@ -47,7 +80,8 @@ public class Client {
         /**
          * sum-up of the request sent
          */
-        printRequest(request);
+        System.out.println(request.toString());
+//        printRequest(request);
 
 
 
@@ -100,6 +134,13 @@ public class Client {
         clientChannel.write(buffer);
 //        log("sending: " + infoToSend);
         buffer.clear();
+    }
+
+    public static String createHeader(){
+        if (type.equals("PUBLISH")){
+            return type.toUpperCase()+" "+"author:@"+user;
+        }
+        return "ERROR HEADER";
     }
 
 

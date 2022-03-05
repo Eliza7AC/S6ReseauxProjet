@@ -36,6 +36,7 @@ public class Server {
         String user = "";
         String type = "";
         String body = "";
+        String tag = "";
 
         /**
          * answer from the server to the client
@@ -82,7 +83,7 @@ public class Server {
 
 
                     /**
-                     * reads request received
+                     * READING REQUEST
                      */
                     if(!result.equals("")){
                         log("Message received: " + result);
@@ -91,40 +92,43 @@ public class Server {
                         String firstWord = infoReceivedArr[0];
 
                         /**
-                         * identifying request type
+                         * *********** READING HEADER
                          */
                         if(isUpperCase(firstWord)){
                             type = infoReceivedArr[0];
                             System.out.println("THIS IS UPPERCASE = " + infoReceivedArr);
+
+                            /**
+                             * identifying author
+                             */
+                            if(requestContains("@", infoReceivedArr)){
+                                user = getInfoFromRequest("@", infoReceivedArr); // author:@aline
+                                String[] userString = user.split("@"); // author aline
+                                user = userString[1]; // aline
+                            }
+                            /**
+                             * identifying tag
+                             */
+                            if(requestContains("#", infoReceivedArr)){
+                                tag = getInfoFromRequest("#", infoReceivedArr); // tag:#tag
+                                String[] tagString = tag.split("#"); // tag: tag
+                                tag = tagString[1]; // tag
+                            }
                         }
-//                        if (isUpperCase(result)){
-//                            type = result;
-//                            log("RESULT ===> " + result + " | TYPE = " + type);
-//                        }
-                        /**
-                         * identifying author
-                         */
-                        if(requestContains("@", infoReceivedArr)){
-                            user = getInfoFromRequest("@", infoReceivedArr); // author:@aline
-                            String[] userString = user.split("@"); // author aline
-                            user = userString[1]; // aline
-                            System.out.println("user -------->>>>>" + user);
-                        }
 
 
 
-                        // TODO
-//                        Message msg = new Message()
-//                        Database.storage()
 
 
                         /**
-                         * identifying msg - checking if end of the request
+                         * *********** READING BODY - checking if "END" = end of the request
                          */
                         if (result.endsWith("END")){
 
+                            /**
+                             * adding msg to database
+                             */
                             body = result.substring(0,result.length()-3);
-
                             Database.addMsg(body,user);
                             System.out.println("database: " + Database.storage.toString());
 
@@ -155,8 +159,8 @@ public class Server {
                     /**
                      * closing connexion
                      */
-                    if (result.equals("Crunchify")) {
-                        log("\nIt's time to close connection as we got last company name 'Crunchify'");
+                    if (result.equals("EXIT")) {
+                        log("\ntime to close connection");
                         log("\nServer will keep running. Try running client again to establish new connection");
                         readableChannel.close();
                     }

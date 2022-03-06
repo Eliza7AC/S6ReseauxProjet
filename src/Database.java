@@ -21,6 +21,7 @@ public class Database {
     public static void showDatabase(){
         for (Message m : storage){
             System.out.println(m.toString());
+            System.out.println(" ");
         }
     }
 

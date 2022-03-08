@@ -3,29 +3,30 @@ import java.util.ArrayList;
 
 public class Database {
 
-
     /**
-     * messages stored by chronological order
-     * starts with the older msg
-     * ends with the most recent msg
+     * messages of database are stored in arraylist
+     * by chronological order
+     * = older msg at the beginning
+     * & most recent msg at the end
      */
     public static ArrayList<Message> storage = new ArrayList<>();
 
+
+
     /**
      * retrieving data from Persistence file
-     * the very first time only (= if predicate is false)
-     * and other times we don't (= when predicate is true)
+     * only once when server boots (=> and when isConnected is false)
+     * and stores data in "storage" arraylist
      */
-    public static File file;
+    public static File file = new File("Persistence");
     public static boolean isConnected = false;
 
     public static void getPersistenceData() throws IOException {
         if (isConnected == false){
             /**
-             * iterating through Persistence file
+             * iterating through Persistence file line by line
              * to retrieve data saved
              */
-            file = new File("Persistence");
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = null;
             int nLine = 0;
@@ -36,7 +37,7 @@ public class Database {
                     nLine++;
                     continue;
                 }
-                System.out.println(line);
+//                System.out.println(line);
                 String[] storageLine = line.split(",");
 
                 // data per line
@@ -48,43 +49,37 @@ public class Database {
                 Message m = new Message(msgLine,userLine,idLine);
                 storage.add(m);
 
-                System.out.println("l'user " + userLine + " a pour id " + idLine + " et son msg est " + msgLine);
+//                System.out.println("l'user " + userLine + " a pour id " + idLine + " et son msg est " + msgLine);
 
             }
             isConnected = true;
-
-            addPersistenceData();
         }
     }
 
-    public static void addPersistenceData(){
-        // TODO
+
+
+    /**
+     * when we add new data to arraylist
+     * we also add new data to Persistence file
+     * => in this way, data is persistent
+     */
+    public static void addMsg(String msg, String user){
+        int id = storage.size(); // final index of the list
+        storage.add(new Message(msg,user, id));
+        addPersistenceData(msg, user, id);
+    }
+
+    public static void addPersistenceData(String msg, String user, int id){
         try{
             FileWriter f = new FileWriter(file.getName(),true);
             BufferedWriter b = new BufferedWriter(f);
-            b.write("3,la fin est proche,Milouse");
+            b.write(id+","+msg+","+user);
             b.newLine();
             b.close();
         }
         catch(Exception e){
             e.printStackTrace();
         }
-    }
-
-//    public static ArrayList<User> subscriptions = new ArrayList<>();
-    public static void main(String[] args) throws IOException {
-
-        getPersistenceData();
-        showDatabase();
-
-    }
-
-
-    public static void addMsg(String msg, String user){
-        int id = storage.size(); // final index of the list
-        storage.add(new Message(msg,user, id));
-
-
     }
 
     public static void showDatabase(){
@@ -95,10 +90,10 @@ public class Database {
     }
 
 
-
-    /**
-     * processing by deep copy of the database
-     * then removing all messages that doesn't match to options
+    /** ****** function used in RCV_IDS case ******
+     *
+     * step 1 = processing by deep copy of the database (Database side)
+     * step 2 = then removing all messages which don't match options (Server side)
      */
     public static ArrayList<Message> deepCopy(){
         ArrayList<Message> newList = new ArrayList<>();

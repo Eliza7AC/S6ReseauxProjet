@@ -14,6 +14,14 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
+        /**
+         * preparing database from Persistence file
+         */
+        Database.getPersistenceData();
+
+        /**
+         * initializing server
+         */
         Selector selector = Selector.open(); // selector is open here
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.bind(new InetSocketAddress("localhost", 12345));
@@ -86,10 +94,9 @@ public class Server {
                              * clearing all previous infos
                              */
                             bufferAnswer.clear();
+                            // TODO ??????
                         }
-
                     }
-
 
                     /**
                      * closing connexion
@@ -112,6 +119,8 @@ public class Server {
 
                 iteratorKeys.remove();
             }
+
+
         }
     }
 
@@ -160,7 +169,7 @@ public class Server {
 
             /**
              * processing by deep copy of the database in new ArrayList
-             * then removing all messages that doesn't match the options
+             * then removing all messages which don't match the options
              */
             ArrayList<Message> results = Database.deepCopy();
 
@@ -187,7 +196,6 @@ public class Server {
                 Database.getMsgWithLimit(request.getOptionLimit(), results);
                 System.out.println(results.toString());
             }
-
             // construction of answer
             answer = "RCV_IDS ";
             for (Message m : results){
@@ -196,16 +204,13 @@ public class Server {
             results.clear();
 
         }
-
-
-        // TODO - doesn't work
         else if(request.getType().equals("RCV_MSG")){
-            System.out.println("la requête est RCV_MSG!!!");
-            Integer idInt = Integer.parseInt(request.getOptionId());
+            String idString = request.getOptionId().substring(0,1);
+            System.out.println(idString);
+            Integer idInt = Integer.parseInt(idString);
             Message msg = Database.getMsgFromId(idInt);
             answer = "MSG " + msg.getMsg();
         }
-
         return answer;
     }
 

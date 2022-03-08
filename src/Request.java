@@ -69,12 +69,18 @@ public class Request {
             }
             header = header + "END";
             data.add(header);
-            System.out.println(">>>" + header);
+//            System.out.println(">>>" + header);
         }
         else if (type.equals("RCV_MSG")){
             optionId = askInfo("id");
             header = "RCV_MSG " + "since_id:" + optionId + "END";
-            System.out.println(">>>" + header);
+            data.add(header);
+//            System.out.println(">>>" + header);
+        }
+        else if (type.equals("FOLLOWER")){
+            System.out.println("ceci est un follower");
+            header = "FOLLOWER " + "END";
+            data.add(header);
         }
     }
 
@@ -92,7 +98,7 @@ public class Request {
 
     /**
      * request received, server side
-     * = creation of request from header is received by server
+     * = creation of request from header received by server
      * + update of request when body is received by server
      */
     public Request(String header){

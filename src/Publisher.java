@@ -23,6 +23,7 @@ public class Publisher {
          */
         Request request = new Request();
 
+
         for (String s : request.getData()){
             byte[] message = s.getBytes();
             ByteBuffer buffer = ByteBuffer.wrap(message);

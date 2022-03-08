@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 
 public class Database {
@@ -10,12 +11,80 @@ public class Database {
      */
     public static ArrayList<Message> storage = new ArrayList<>();
 
+    /**
+     * retrieving data from Persistence file
+     * the very first time only (= if predicate is false)
+     * and other times we don't (= when predicate is true)
+     */
+    public static File file;
+    public static boolean isConnected = false;
+
+    public static void getPersistenceData() throws IOException {
+        if (isConnected == false){
+            /**
+             * iterating through Persistence file
+             * to retrieve data saved
+             */
+            file = new File("Persistence");
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line = null;
+            int nLine = 0;
+            while ((line = br.readLine()) != null)
+            {
+                // first line is only a comment so we next it
+                if (nLine == 0){
+                    nLine++;
+                    continue;
+                }
+                System.out.println(line);
+                String[] storageLine = line.split(",");
+
+                // data per line
+                int idLine = Integer.parseInt(storageLine[0]);
+                String msgLine = storageLine[1];
+                String userLine = storageLine[2];
+
+                // adding to storage object
+                Message m = new Message(msgLine,userLine,idLine);
+                storage.add(m);
+
+                System.out.println("l'user " + userLine + " a pour id " + idLine + " et son msg est " + msgLine);
+
+            }
+            isConnected = true;
+
+            addPersistenceData();
+        }
+    }
+
+    public static void addPersistenceData(){
+        // TODO
+        try{
+            FileWriter f = new FileWriter(file.getName(),true);
+            BufferedWriter b = new BufferedWriter(f);
+            b.write("3,la fin est proche,Milouse");
+            b.newLine();
+            b.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
 //    public static ArrayList<User> subscriptions = new ArrayList<>();
+    public static void main(String[] args) throws IOException {
+
+        getPersistenceData();
+        showDatabase();
+
+    }
 
 
     public static void addMsg(String msg, String user){
         int id = storage.size(); // final index of the list
         storage.add(new Message(msg,user, id));
+
+
     }
 
     public static void showDatabase(){

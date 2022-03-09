@@ -9,67 +9,110 @@ public class Database {
      * = older msg at the beginning
      * & most recent msg at the end
      */
-    public static ArrayList<Message> storage = new ArrayList<>();
+    public static File file = new File("PersistenceMsg");
+    public static ArrayList<Message> storageMsg = new ArrayList<>();
+
+    /**
+     * subscriptions of database are stored in arraylist
+     */
+    public static File fileSubscription = new File("PersistenceSubscription");
+    public static ArrayList<Subscription> storageSubscription = new ArrayList<>();
 
 
 
     /**
-     * retrieving data from Persistence file
-     * only once when server boots (=> and when isConnected is false)
-     * and stores data in "storage" arraylist
+     * retrieving data from PersistenceMsg and PersistenceSubscription files
+     * only once when server boots
+     * and stores data in both matching arraylist
      */
-    public static File file = new File("Persistence");
-    public static boolean isConnected = false;
-
     public static void getPersistenceData() throws IOException {
-        if (isConnected == false){
-            /**
-             * iterating through Persistence file line by line
-             * to retrieve data saved
-             */
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line = null;
-            int nLine = 0;
-            while ((line = br.readLine()) != null)
-            {
-                // first line is only a comment so we next it
-                if (nLine == 0){
-                    nLine++;
-                    continue;
-                }
+        /**
+         * iterating through PersistenceMsg file line by line
+         * to retrieve data saved
+         */
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line = null;
+        int nLine = 0;
+        while ((line = br.readLine()) != null)
+        {
+            // first line is only a comment so we next it
+            if (nLine == 0){
+                nLine++;
+                continue;
+            }
 //                System.out.println(line);
-                String[] storageLine = line.split(",");
+            String[] storageLine = line.split(",");
 
-                // data per line
-                int idLine = Integer.parseInt(storageLine[0]);
-                String msgLine = storageLine[1];
-                String userLine = storageLine[2];
+            // data per line
+            int idLine = Integer.parseInt(storageLine[0]);
+            String msgLine = storageLine[1];
+            String userLine = storageLine[2];
 
-                // adding to storage object
-                Message m = new Message(msgLine,userLine,idLine);
-                storage.add(m);
-
+            // adding to storage object
+            Message m = new Message(msgLine,userLine,idLine);
+            storageMsg.add(m);
 //                System.out.println("l'user " + userLine + " a pour id " + idLine + " et son msg est " + msgLine);
 
-            }
-            isConnected = true;
         }
+
+
+        /**
+         * iterating through PersistenceSubscription file line by line
+         * to retrieve data saved
+         */
+        BufferedReader br2 = new BufferedReader(new FileReader(fileSubscription));
+        String line2 = null;
+        int nLine2 = 0;
+        while ((line2 = br2.readLine()) != null)
+        {
+            // first line is only a comment so we next it
+            if (nLine == 0){
+                nLine++;
+                continue;
+            }
+//                System.out.println(line);
+            String[] storageLine = line2.split(",");
+
+            // data per line
+//            String userLine = "";
+//            ArrayList<String> msgLine = new ArrayList<>();
+//            for (int i = 0; i < storageLine.length; i++) {
+//                if (i==0){ // if info is username
+//                    userLine = storageLine[i];
+//                }
+//                else{
+//                    msgLine.add(storageLine[i]);
+//                }
+//            }
+
+            // new Subscription object + adding to subscription storage
+            Subscription subscription = new Subscription(line2);
+            storageSubscription.add(subscription);
+        }
+        showSubscriptionDatabase();
+
+
     }
 
 
 
     /**
      * when we add new data to arraylist
-     * we also add new data to Persistence file
+     * we also add new data to PersistenceMsg file
      * => in this way, data is persistent
      */
     public static void addMsg(String msg, String user){
-        int id = storage.size(); // final index of the list
-        storage.add(new Message(msg,user, id));
-        addPersistenceData(msg, user, id);
+        int id = storageMsg.size(); // final index of the list
+        storageMsg.add(new Message(msg,user, id));
+        addPersistenceMsg(msg, user, id);
+
+        if (userIsFollowed(user)!=null){
+            // updating msg of followed user after adding new msg to the database
+            userIsFollowed(user).updateMsg();
+        }
     }
 
-    public static void addPersistenceData(String msg, String user, int id){
+    public static void addPersistenceMsg(String msg, String user, int id){
         try{
             FileWriter f = new FileWriter(file.getName(),true);
             BufferedWriter b = new BufferedWriter(f);
@@ -82,9 +125,40 @@ public class Database {
         }
     }
 
-    public static void showDatabase(){
-        for (Message m : storage){
+    /**
+     * adding subscription to arraylist of database
+     * AND adding info to persistent file
+     * = data persistent
+     */
+    public static void addSubscription(Subscription s){
+        storageSubscription.add(s);
+        addPersistenceSubscription(s.getUser());
+    }
+
+    public static void addPersistenceSubscription(String user){
+        try{
+            FileWriter f2 = new FileWriter(fileSubscription.getName(),true);
+            BufferedWriter b2 = new BufferedWriter(f2);
+            b2.write(user);
+            b2.newLine();
+            b2.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void showMsgDatabase(){
+        for (Message m : storageMsg){
             System.out.println(m.toString());
+            System.out.println(" ");
+        }
+    }
+
+    public static void showSubscriptionDatabase(){
+        for (Subscription s : storageSubscription){
+            System.out.println(s.toString());
             System.out.println(" ");
         }
     }
@@ -97,7 +171,7 @@ public class Database {
      */
     public static ArrayList<Message> deepCopy(){
         ArrayList<Message> newList = new ArrayList<>();
-        for(Message m : storage){
+        for(Message m : storageMsg){
             newList.add(m);
         }
         return newList;
@@ -112,10 +186,25 @@ public class Database {
         results.removeIf(msg -> !msg.getMsg().contains(tag));
     }
 
+
+    // INFO - msg published after this id
     public static void getMsgSinceId(int id, ArrayList<Message> results){
         results.removeIf(msg -> msg.getId()<=id);
     }
 
+
+    // INFO - msg with this specified id
+    public static Message getMsgFromId(int id){
+        for (Message m: storageMsg){
+            if (m.getId() == id){
+                return m;
+            }
+        }
+        return null;
+    }
+
+
+    // INFO - get the most recent n msg
     public static void getMsgWithLimit(String limit, ArrayList<Message> results){
         int limitInt = Integer.parseInt(limit);
 
@@ -128,52 +217,30 @@ public class Database {
     }
 
 
-    public static Message getMsgFromId(int id){
-        for (Message m: storage){
-            if (m.getId() == id){
-                return m;
+
+
+    // INFO - author:@user l’auteur des messages est @user
+    public static ArrayList<String> getMsgFromUser(String user){
+        ArrayList<String> msgFromUser = new ArrayList<>();
+
+        for (Message m: storageMsg){
+            if (m.getUser().equals(user)){
+                msgFromUser.add(m.getMsg());
+            }
+        }
+
+        return msgFromUser;
+    }
+
+    public static Subscription userIsFollowed(String user){
+        for(Subscription s : storageSubscription){
+            if (s.getUser().equals(user)){
+                return s;
             }
         }
         return null;
     }
 
-
-
-
-
-
-
-
-
-
-    // INFO - author:@user l’auteur des messages est @user
-//    public ArrayList<String> getMsgFromUser(String user){
-//        ArrayList<String> msgFromUser = new ArrayList<>();
-//
-//        // scanning and retrieving msg from user
-//        for (int i = 0; i < dataBase.size(); i++) {
-//            String actualUser = dataBase.get(i).get(0);
-//            if (actualUser.equals(user)){
-//                msgFromUser.add(dataBase.get(i).get(1));
-//            }
-//        }
-//
-//        return msgFromUser;
-//    }
-//
-//
-
-//
-//    // INFO - since_id:id les messages ont été publiés après le message dont l’identifiant est id
-//    public ArrayList<String> getMsgAfter(int id){
-//        ArrayList<String> msgAfter = new ArrayList();
-//
-//        for (int i = id; i < dataBase.size(); i++) {
-//            String actualMsg = dataBase.get(i).get(1);
-//            msgAfter.add(actualMsg);
-//        }
-//        return msgAfter;
-//    }
 
 
 }

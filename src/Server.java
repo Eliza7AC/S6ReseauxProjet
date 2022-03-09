@@ -1,3 +1,4 @@
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -15,7 +16,7 @@ public class Server {
     public static void main(String[] args) throws IOException {
 
         /**
-         * preparing database from Persistence file
+         * preparing database from PersistenceMsg file
          */
         Database.getPersistenceData();
 
@@ -159,10 +160,12 @@ public class Server {
         String answer = "";
 
         System.out.println(request.getType() + "........................");
+        System.out.println("HEADER = " + request.getHeader());
+        System.out.println("BODY = " + request.getBody());
 
         if(request.getType().equals("PUBLISH")){
             Database.addMsg(request.getBody(), request.getUser());
-            System.out.println("database: " + Database.storage.toString());
+            System.out.println("database: " + Database.storageMsg.toString());
             answer = "OK";
         }
         else if(request.getType().equals("RCV_IDS")){
@@ -210,6 +213,32 @@ public class Server {
             Integer idInt = Integer.parseInt(idString);
             Message msg = Database.getMsgFromId(idInt);
             answer = "MSG " + msg.getMsg();
+        }
+        else if (request.getType().equals("FOLLOWER")){
+            String[] followerRequest = request.getBody().split(" ");
+            ArrayList<String> subscriptionUsers = new ArrayList<>();
+
+            // example of followerRequest: FOLLOWER adeline Descartes kevin END
+            // => so we exclude first and last word
+            for (int i = 1; i < followerRequest.length; i++) {
+
+                // adding subscription to database
+                String userName = followerRequest[i];
+                Subscription subscription = new Subscription(userName); // retrieving msg from user
+                Database.addSubscription(subscription);
+
+                // preparing answer from arraylist
+                ArrayList<String> msgFromUser = new ArrayList<>();
+                msgFromUser.add(userName); // adding name of user
+                msgFromUser.addAll(subscription.getMessages()); // adding msg of user
+                answer = answer+msgFromUser.toString();
+
+            }
+            // TODO erase
+            System.out.println("subscriptionId : " + subscriptionUsers.toString());
+            System.out.println("the answer is : " + answer);
+            Database.showSubscriptionDatabase();
+
         }
         return answer;
     }

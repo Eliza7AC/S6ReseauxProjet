@@ -11,7 +11,7 @@ public class Request {
      * the second one = server side (infos retrieved by server when data received)
      */
 
-    public static List<String> headers = Arrays.asList("PUBLISH", "RCV_IDS", "RCV_MSG", "REPLY", "REPUBLISH");
+    public static List<String> headers = Arrays.asList("PUBLISH", "RCV_IDS", "RCV_MSG", "REPLY", "REPUBLISH", "FOLLOWER");
 
     private String type; // PUBLISH
     private String user; // user

@@ -7,15 +7,16 @@ import java.util.Scanner;
 
 public class Follower {
 
-    public static ArrayList<Integer> subscriptions;
+    /**
+     * users id that follower wants to follow
+     */
+    public static ArrayList<String> subscriptions;
+
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        subscriptions = new ArrayList<>();
-
         /**
          * connection to server
-         * with selectable channel for stream-oriented connecting sockets
          */
         SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress("localhost", 12345));
         log("--- Connecting to Server on port 12345...");
@@ -25,37 +26,55 @@ public class Follower {
         /**
          * asking for info to client
          */
+        subscriptions = new ArrayList<>();
         while(true){
-            String res = askInfo("id of users you want to follow");
-            if(res.equals("")){
+            String user = askInfo("user you want to follow");
+            if(user.equals("")){
                 break;
             }
-            Integer resId = Integer.parseInt(res);
-            subscriptions.add(resId);
+//            Integer resId = Integer.parseInt(res);
+            subscriptions.add(user);
         }
         System.out.println(subscriptions.toString());
+
+
 
         /**
          * TODO constructing answer for server
          *  + processing request server side
          */
+        String answer = "FOLLOWER ";
+        for(String user: subscriptions){
+            answer = answer+user+" ";
+        }
+        answer = answer+"END";
+        System.out.println("answer ===> " + answer);
 
 
         /**
          * TODO sending header to server
          */
-        for (Integer id : subscriptions){
-            String idString = String.valueOf(id);
+        byte[] message = answer.getBytes();
+        ByteBuffer buffer = ByteBuffer.wrap(message);
+        clientChannel.write(buffer);
+        log("sending: " + answer);
+        buffer.clear();
 
-            byte[] message = idString.getBytes();
-            ByteBuffer buffer = ByteBuffer.wrap(message);
-            clientChannel.write(buffer);
-            log("sending: " + idString);
-            buffer.clear();
+        // wait for 1 sec before sending next message
+        Thread.sleep(1000);
 
-            // wait for 1 sec before sending next message
-            Thread.sleep(1000);
-        }
+//        for (String id : subscriptions){
+//            String idString = String.valueOf(id);
+//
+//            byte[] message = idString.getBytes();
+//            ByteBuffer buffer = ByteBuffer.wrap(message);
+//            clientChannel.write(buffer);
+//            log("sending: " + idString);
+//            buffer.clear();
+//
+//            // wait for 1 sec before sending next message
+//            Thread.sleep(1000);
+//        }
 
 
         /**

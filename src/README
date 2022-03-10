@@ -1,11 +1,48 @@
-To see comments in right colors, please do the following:
+Projet Réseaux - L3 Informatique Groupe 1
+CHANOZ Angéline, Adam FARESSE
+
+
+############################################
+########### OPTIONAL - COMMENTS ############
+############################################
+
+To see comments in right colors, please do the following.
 
 Go to:
 1) "File" tab
 2) "Settings..." tab
 3) select "Editor"
 4) and then "TODO" section
-
 5)Create a new pattern by adding the following infos:
 pattern: \bINFO\b.*
 foreground: 4183C0
+
+
+
+
+############################################
+############### FUNCTIONING ################
+############################################
+
+
+0)  COMMANDS
+    javac *.java // compiling the whole project
+    java Server // running server side
+    java Publisher // running client side
+
+1)  Server is launched (Server Class) and listens to the network.
+
+2)  Client is launched (Publish Class) and a Request object is created
+    with a header and a body and some others info.
+    // TODO dedezdzedze - PS: if Follower Class is launched, there is no Request object, but only a String object
+
+3)  The server receives the data from the client (String object, from ByteBuffer)
+    and analyzes it to recreate a Request object.
+    At the same time, the server adds the info of request to the database (if needed).
+    Database Class allows to handle data (messages, etc.) retrieved from Persistence files
+    (PersistenceMsg and PersistenceSubcription).
+
+4)  The server prepares an answer according ProcessingData Claass.
+
+5) The server sends the answer to the client.
+

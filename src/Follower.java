@@ -5,6 +5,10 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * handle only "FOLLOWER" type request
+ */
+
 public class Follower {
 
     /**
@@ -40,19 +44,20 @@ public class Follower {
 
 
         /**
-         * TODO constructing answer for server
+         * constructing answer for server
          *  + processing request server side
+         *  THE REQUEST MUST ENDED WITH "END" WORD
          */
         String answer = "FOLLOWER ";
         for(String user: subscriptions){
             answer = answer+user+" ";
         }
         answer = answer+"END";
-        System.out.println("answer ===> " + answer);
+//        System.out.println("answer ===> " + answer);
 
 
         /**
-         * TODO sending header to server
+         * sending header to server
          */
         byte[] message = answer.getBytes();
         ByteBuffer buffer = ByteBuffer.wrap(message);

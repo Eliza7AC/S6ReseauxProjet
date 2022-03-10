@@ -5,12 +5,12 @@ import java.util.Scanner;
 
 public class Request {
 
-    /**
+    /** Request Class is used by both server and client sides
+     *
      * two kinds of request can be created:
      * the first one = client side (infos are asked to the client)
      * the second one = server side (infos retrieved by server when data received)
      */
-
     public static List<String> headers = Arrays.asList("PUBLISH", "RCV_IDS", "RCV_MSG", "REPLY", "REPUBLISH", "FOLLOWER");
 
     private String type; // PUBLISH
@@ -22,6 +22,8 @@ public class Request {
     private String optionTag = "";
     private String optionId = "";
     private String optionLimit = "";
+
+    public static final String END = " END";
 
     // to iterate through when sending info from client to server
     private ArrayList<String> data = new ArrayList<>();
@@ -35,6 +37,7 @@ public class Request {
     /**
      * request sent, client side
      * with infos asked to client
+     * THE REQUEST MUST ENDED WITH "END" WORD
      */
     public Request() {
         String type = askInfo("TYPE"); // for example: PUBLISH
@@ -42,7 +45,7 @@ public class Request {
         if (type.equals("PUBLISH")){
             user = askInfo("USER");
             header = type.toUpperCase()+" "+"author:@"+user;
-            body = askInfo("BODY")+"END";
+            body = askInfo("BODY")+END;
 
             data.add(header);
             data.add(body);
@@ -67,19 +70,33 @@ public class Request {
             if (!optionLimit.isEmpty()){
                 header = header + "limit:" + optionLimit + " ";
             }
-            header = header + "END";
+            header = header + END;
             data.add(header);
 //            System.out.println(">>>" + header);
         }
         else if (type.equals("RCV_MSG")){
             optionId = askInfo("id");
-            header = "RCV_MSG " + "since_id:" + optionId + "END";
+            header = "RCV_MSG " + "since_id:" + optionId + END;
             data.add(header);
 //            System.out.println(">>>" + header);
         }
-        else if (type.equals("FOLLOWER")){
-            System.out.println("ceci est un follower");
-            header = "FOLLOWER " + "END";
+//        else if (type.equals("FOLLOWER")){
+//            System.out.println("ceci est un follower");
+//            header = "FOLLOWER " + "END";
+//            data.add(header);
+//        }
+        else if (type.equals("REPLY")){
+            user = askInfo("author");
+            optionId = askInfo("id");
+            header = "REPLY " + "author:@" + user + " reply_to_id:"+optionId;
+            body = askInfo("BODY")+END;
+            data.add(header);
+            data.add(body);
+        }
+        else if (type.equals("REPUBLISH")){
+            optionUser = askInfo("user");
+            optionId = askInfo("id");
+            header = "REPUBLISH author:@"+optionUser+" msg_id:"+optionId + END;
             data.add(header);
         }
     }

@@ -12,13 +12,15 @@ public class Server {
 
     public static Request request;
 
-
     public static void main(String[] args) throws IOException {
+
+
 
         /**
          * preparing database from PersistenceMsg file
          */
         Database.getPersistenceData();
+
 
         /**
          * initializing server
@@ -71,21 +73,23 @@ public class Server {
                         String firstWordReceived = infoReceivedArr[0];
 
                         if(isHeader(firstWordReceived)){
-                            request = new Request(dataReceived);
+                            request = new Request(dataReceived); // creation of request header from data of client
                         }
 
-//                        System.out.println(isEndOfRequest(dataReceived) + "ççççççççççç");
-                        if(isEndOfRequest(dataReceived)){
+                        /**
+                         * THE REQUEST MUST ENDED WITH " END" WORD
+                         */
+                        if(dataReceived.endsWith(Request.END)){
                             String body = dataReceived;
-                            request.update(body);
+                            request.update(body); // updating request body with rest of the request
 
-                            SocketChannel client = (SocketChannel) myKey.channel();
                             /**
                              * answer to client
                              */
+                            SocketChannel client = (SocketChannel) myKey.channel();
                             ByteBuffer bufferAnswer = ByteBuffer.wrap(answer.getBytes());
-//                            log(request.toString() + "!!!!!!!!!!!!!!!!!!!!!!");
-                            answer = getAnswer();
+//                            answer = getAnswer();
+                            answer = ProcessingRequest.getAnswer(request);
                             bufferAnswer = ByteBuffer.wrap(answer.getBytes());
                             client.write(bufferAnswer);
                             log("sending answer: " + answer);
@@ -95,7 +99,6 @@ public class Server {
                              * clearing all previous infos
                              */
                             bufferAnswer.clear();
-                            // TODO ??????
                         }
                     }
 
@@ -120,18 +123,9 @@ public class Server {
 
                 iteratorKeys.remove();
             }
-
-
         }
     }
 
-
-
-    /**
-     * ************************************
-     * *********** methods ****************
-     * ************************************
-     */
 
 
     private static void log(String str) {
@@ -146,101 +140,6 @@ public class Server {
             }
         }
         return false;
-    }
-
-    public static boolean isEndOfRequest(String s){
-        return s.endsWith("END");
-    }
-
-
-    /**
-     * preparing answer according to request received
-     */
-    public static String getAnswer(){
-        String answer = "";
-
-        System.out.println(request.getType() + "........................");
-        System.out.println("HEADER = " + request.getHeader());
-        System.out.println("BODY = " + request.getBody());
-
-        if(request.getType().equals("PUBLISH")){
-            Database.addMsg(request.getBody(), request.getUser());
-            System.out.println("database: " + Database.storageMsg.toString());
-            answer = "OK";
-        }
-        else if(request.getType().equals("RCV_IDS")){
-
-            /**
-             * processing by deep copy of the database in new ArrayList
-             * then removing all messages which don't match the options
-             */
-            ArrayList<Message> results = Database.deepCopy();
-
-            System.out.println(request.getUser());
-            if (request.getUser()!=null){
-                System.out.println("if !user.isEmpty() " + request.getUser());
-                Database.getMsgFromUser(request.getUser(),results);
-                System.out.println(results.toString());
-            }
-            if (!request.getOptionTag().isEmpty()){
-                System.out.println("if !tag.isEmpty() " + request.getOptionTag());
-                Database.getMsgFromTag(request.getOptionTag(),results);
-                System.out.println(results.toString());
-            }
-            if(!request.getOptionId().isEmpty()){
-                System.out.println(" if !id.isEmpty() " + request.getOptionId());
-                int idInt = Integer.parseInt(request.getOptionId());
-                System.out.println(idInt+2);
-                Database.getMsgSinceId(idInt, results);
-                System.out.println(results.toString());
-            }
-            if(!request.getOptionLimit().isEmpty()){
-                System.out.println(" if !limit.isEmpty() " + request.getOptionLimit());
-                Database.getMsgWithLimit(request.getOptionLimit(), results);
-                System.out.println(results.toString());
-            }
-            // construction of answer
-            answer = "RCV_IDS ";
-            for (Message m : results){
-                answer = answer + " | " + m.getId();
-            }
-            results.clear();
-
-        }
-        else if(request.getType().equals("RCV_MSG")){
-            String idString = request.getOptionId().substring(0,1);
-            System.out.println(idString);
-            Integer idInt = Integer.parseInt(idString);
-            Message msg = Database.getMsgFromId(idInt);
-            answer = "MSG " + msg.getMsg();
-        }
-        else if (request.getType().equals("FOLLOWER")){
-            String[] followerRequest = request.getBody().split(" ");
-            ArrayList<String> subscriptionUsers = new ArrayList<>();
-
-            // example of followerRequest: FOLLOWER adeline Descartes kevin END
-            // => so we exclude first and last word
-            for (int i = 1; i < followerRequest.length; i++) {
-
-                // adding subscription to database
-                String userName = followerRequest[i];
-                Subscription subscription = new Subscription(userName); // retrieving msg from user
-                Database.addSubscription(subscription);
-
-                // preparing answer from arraylist
-                ArrayList<String> msgFromUser = new ArrayList<>();
-                msgFromUser.add(userName); // adding name of user
-                msgFromUser.addAll(subscription.getMessages()); // adding msg of user
-                answer = answer+msgFromUser.toString();
-
-            }
-            // TODO erase
-            System.out.println("subscriptionId : " + subscriptionUsers.toString());
-            System.out.println("the answer is : " + answer);
-            Database.showSubscriptionDatabase();
-
-        }
-        return answer;
     }
 
 }

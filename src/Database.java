@@ -50,10 +50,22 @@ public class Database {
 
             // adding to storage object
             Message m = new Message(msgLine,userLine,idLine);
+//            System.out.println(m.getReplyToId());
+
+            String replyIdLine = "";
+            if (storageLine.length>3){ // if there is an idToReply
+                replyIdLine = storageLine[3]; // idToReply = 4th element
+            }
+            else{
+                replyIdLine = "-1";
+            }
+            m.setReplyTo(Integer.parseInt(replyIdLine));
             storageMsg.add(m);
+
 //                System.out.println("l'user " + userLine + " a pour id " + idLine + " et son msg est " + msgLine);
 
         }
+        showMsgDatabase();
 
 
         /**
@@ -89,7 +101,7 @@ public class Database {
             Subscription subscription = new Subscription(line2);
             storageSubscription.add(subscription);
         }
-        showSubscriptionDatabase();
+//        showSubscriptionDatabase();
 
 
     }
@@ -103,8 +115,10 @@ public class Database {
      */
     public static void addMsg(String msg, String user){
         int id = storageMsg.size(); // final index of the list
-        storageMsg.add(new Message(msg,user, id));
-        addPersistenceMsg(msg, user, id);
+        Message newMsg = new Message(msg, user, id);
+        newMsg.setReplyTo(-1);
+        storageMsg.add(newMsg);
+        addPersistenceMsg(msg, user, id, newMsg.getReplyToId());
 
         if (userIsFollowed(user)!=null){
             // updating msg of followed user after adding new msg to the database
@@ -112,11 +126,31 @@ public class Database {
         }
     }
 
-    public static void addPersistenceMsg(String msg, String user, int id){
+    public static void addMsg(Message msg){
+//        int id = storageMsg.size(); // final index of the list
+//        msg.setId(id);
+
+
+        storageMsg.add(msg);
+        addPersistenceMsg(msg.getMsg(), msg.getUser(), msg.getId(),msg.getReplyToId());
+
+        if (userIsFollowed(msg.getUser())!=null){
+            // updating msg of followed user after adding new msg to the database
+            userIsFollowed(msg.getUser()).updateMsg();
+        }
+    }
+
+    private static void addPersistenceMsg(String msg, String user, int id, Integer idToReply){
         try{
             FileWriter f = new FileWriter(file.getName(),true);
             BufferedWriter b = new BufferedWriter(f);
-            b.write(id+","+msg+","+user);
+
+            if(idToReply != -1){
+                b.write(id+","+msg+","+user+","+idToReply);
+            }
+            else{
+                b.write(id+","+msg+","+user+",-1");
+            }
             b.newLine();
             b.close();
         }
@@ -135,7 +169,7 @@ public class Database {
         addPersistenceSubscription(s.getUser());
     }
 
-    public static void addPersistenceSubscription(String user){
+    private static void addPersistenceSubscription(String user){
         try{
             FileWriter f2 = new FileWriter(fileSubscription.getName(),true);
             BufferedWriter b2 = new BufferedWriter(f2);
@@ -152,7 +186,6 @@ public class Database {
     public static void showMsgDatabase(){
         for (Message m : storageMsg){
             System.out.println(m.toString());
-            System.out.println(" ");
         }
     }
 
@@ -217,8 +250,6 @@ public class Database {
     }
 
 
-
-
     // INFO - author:@user l’auteur des messages est @user
     public static ArrayList<String> getMsgFromUser(String user){
         ArrayList<String> msgFromUser = new ArrayList<>();
@@ -239,6 +270,24 @@ public class Database {
             }
         }
         return null;
+    }
+
+    public static boolean userExists(String user){
+        for (Message m : storageMsg){
+            if (m.getUser().equals(user)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean msgExists(int id){
+        for (Message m : storageMsg){
+            if (m.getId() == id){
+                return true;
+            }
+        }
+        return false;
     }
 
 

@@ -1,11 +1,13 @@
-// id,msg,user
-0,bonjour,adeline
-1,hello,vincent
-2,j'aime les sushis,kevin
-3,la fin est proche,Milouse
-4,coucou ça va,angel
-5,hey,antoine
-6,Cogito Ergo Sum,Descartes
-7,bonjour,angel
-8,conan,konnichiwa
-9,pouf,mo
+// id,msg,user,replyToId
+0,bonjour,adeline,5
+1,hello,vincent,
+2,j'aime les sushis,kevin,6
+3,la fin est proche,Milouse,7
+4,coucou ça va,angel,9
+5,hey,antoine,10
+6,Cogito Ergo Sum,Descartes,8
+7,bonjour,angel,11
+8,conan,konnichiwa,7
+9,pouf,mo,4
+10,aie aie aie,me,2
+11,hellooooooooo,martin,3

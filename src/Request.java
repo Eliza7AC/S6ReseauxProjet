@@ -77,10 +77,18 @@ public class Request {
             data.add(header);
 //            System.out.println(">>>" + header);
         }
-        else if (type.equals("FOLLOWER")){
-            System.out.println("ceci est un follower");
-            header = "FOLLOWER " + "END";
+//        else if (type.equals("FOLLOWER")){
+//            System.out.println("ceci est un follower");
+//            header = "FOLLOWER " + "END";
+//            data.add(header);
+//        }
+        else if (type.equals("REPLY")){
+            user = askInfo("author");
+            optionId = askInfo("id");
+            header = "REPLY " + "author:@" + user + " reply_to_id:"+optionId;
+            body = askInfo("BODY")+"END";
             data.add(header);
+            data.add(body);
         }
     }
 

@@ -48,7 +48,7 @@ public class Follower {
             answer = answer+user+" ";
         }
         answer = answer+"END";
-        System.out.println("answer ===> " + answer);
+//        System.out.println("answer ===> " + answer);
 
 
         /**

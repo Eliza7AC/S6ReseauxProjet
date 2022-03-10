@@ -1,3 +1,13 @@
+Projet Réseaux - L3 Informatique Groupe 1
+CHANOZ Angéline, Adam FARESSE
+
+
+
+
+##########################
+##########################
+##########################
+
 To see comments in right colors, please do the following:
 
 Go to:
@@ -9,3 +19,5 @@ Go to:
 5)Create a new pattern by adding the following infos:
 pattern: \bINFO\b.*
 foreground: 4183C0
+
+

@@ -20,6 +20,7 @@ public class Server {
          */
         Database.getPersistenceData();
 
+
         /**
          * initializing server
          */
@@ -71,20 +72,17 @@ public class Server {
                         String firstWordReceived = infoReceivedArr[0];
 
                         if(isHeader(firstWordReceived)){
-                            request = new Request(dataReceived);
+                            request = new Request(dataReceived); // creation of request header from data of client
                         }
-
-//                        System.out.println(isEndOfRequest(dataReceived) + "ççççççççççç");
                         if(isEndOfRequest(dataReceived)){
                             String body = dataReceived;
-                            request.update(body);
+                            request.update(body); // updating request body with rest of the request
 
-                            SocketChannel client = (SocketChannel) myKey.channel();
                             /**
                              * answer to client
                              */
+                            SocketChannel client = (SocketChannel) myKey.channel();
                             ByteBuffer bufferAnswer = ByteBuffer.wrap(answer.getBytes());
-//                            log(request.toString() + "!!!!!!!!!!!!!!!!!!!!!!");
                             answer = getAnswer();
                             bufferAnswer = ByteBuffer.wrap(answer.getBytes());
                             client.write(bufferAnswer);
@@ -95,7 +93,6 @@ public class Server {
                              * clearing all previous infos
                              */
                             bufferAnswer.clear();
-                            // TODO ??????
                         }
                     }
 
@@ -139,6 +136,7 @@ public class Server {
     }
 
 
+
     public static boolean isHeader(String s){
         for(String header: Request.headers){
             if (s.equals(header)){
@@ -159,6 +157,9 @@ public class Server {
     public static String getAnswer(){
         String answer = "";
 
+        /**
+         * justing printing a few infos about request
+         */
         System.out.println(request.getType() + "........................");
         System.out.println("HEADER = " + request.getHeader());
         System.out.println("BODY = " + request.getBody());
@@ -216,7 +217,8 @@ public class Server {
         }
         else if (request.getType().equals("FOLLOWER")){
             String[] followerRequest = request.getBody().split(" ");
-            ArrayList<String> subscriptionUsers = new ArrayList<>();
+//            ArrayList<String> subscriptionUsers = new ArrayList<>();
+            boolean oneOfUsersExists = false;
 
             // example of followerRequest: FOLLOWER adeline Descartes kevin END
             // => so we exclude first and last word
@@ -224,20 +226,44 @@ public class Server {
 
                 // adding subscription to database
                 String userName = followerRequest[i];
-                Subscription subscription = new Subscription(userName); // retrieving msg from user
-                Database.addSubscription(subscription);
+                if (Database.userExists(userName)){
+                    Subscription subscription = new Subscription(userName); // retrieving msg from user
+                    Database.addSubscription(subscription);
 
-                // preparing answer from arraylist
-                ArrayList<String> msgFromUser = new ArrayList<>();
-                msgFromUser.add(userName); // adding name of user
-                msgFromUser.addAll(subscription.getMessages()); // adding msg of user
-                answer = answer+msgFromUser.toString();
+                    // preparing answer from arraylist
+                    ArrayList<String> msgFromUser = new ArrayList<>();
+                    msgFromUser.add(userName); // adding name of user
+                    msgFromUser.addAll(subscription.getMessages()); // adding msg of user
+                    answer = answer+msgFromUser.toString();
+
+                    oneOfUsersExists = true;
+                }
 
             }
-            // TODO erase
-            System.out.println("subscriptionId : " + subscriptionUsers.toString());
-            System.out.println("the answer is : " + answer);
-            Database.showSubscriptionDatabase();
+            if (!oneOfUsersExists){
+                answer = "ERROR : THIS USER DOESN'T EXIST";
+            }
+//            Database.showSubscriptionDatabase();
+        }
+        else if(request.getType().equals("REPLY")){
+            String[] replyData = request.getHeader().split(" "); // ex: REPLY author:@me reply_to_id:id2END
+            String msgAuthor = replyData[1].split("author:@")[1];
+            String replyId = replyData[2].split("id:")[1];
+            int replyIdint = Integer.parseInt(replyId);
+            String msgContent = request.getBody();
+
+            if (Database.msgExists(replyIdint)){
+                Message message = new Message(msgContent,msgAuthor,Database.storageMsg.size());
+                message.setReplyTo(replyIdint);
+                Database.addMsg(message);
+
+                System.out.println("replyToId = " + message.getReplyToId());
+                Database.showMsgDatabase();
+                answer = "OK";
+            }
+            else{
+                answer = "ERROR";
+            }
 
         }
         return answer;

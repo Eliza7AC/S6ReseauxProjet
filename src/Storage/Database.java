@@ -1,10 +1,16 @@
 package Storage;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
+
 import DataNetwork.*;
 
 public class Database {
+
+
+    public static ArrayList<Stream> listOfSubscriptions = new ArrayList<>();
 
     /**
      * messages of database are stored in arraylist
@@ -293,6 +299,17 @@ public class Database {
         return false;
     }
 
+    public static void addSubscriptionStream(Stream stream){
+        listOfSubscriptions.add(stream);
+    }
+
+    public static Stream getStream(){
+        return listOfSubscriptions.get(0);
+    }
+
+    public static ArrayList<Stream> getFullStream(){
+        return listOfSubscriptions;
+    }
 
 
 }

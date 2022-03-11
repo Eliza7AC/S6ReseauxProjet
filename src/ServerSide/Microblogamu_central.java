@@ -1,5 +1,6 @@
 package ServerSide;
 
+import DataNetwork.Stream;
 import Storage.Database;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -89,6 +90,22 @@ public class Microblogamu_central {
                             String body = dataReceived;
                             System.out.println(body);
                             requestServer.update(body); // updating request body with rest of the request
+
+                            // INFO - processing and handling data
+                            String user = dataReceived.split(" ")[1];
+                            if (Database.listOfSubscriptions.contains(user)){
+                                for(Stream s : Database.listOfSubscriptions){
+                                    if (s.getUser().equals(user)){
+                                        if(dataReceived.split(" ")[0].startsWith("SUBSCRIBE")){
+                                            Database.addSubscriptionStream(new Stream(null,null,null));
+                                        }
+                                        else if(dataReceived.split(" ")[0].startsWith("UNSUBSCRIBE")){
+//                                            Database.addSubscriptionStream(new Stream(s,null,null));
+                                        }
+                                    }
+                                }
+                            }
+
                             /**
                              * answer to client
                              */

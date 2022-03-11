@@ -18,24 +18,15 @@ public class Server {
     public static RequestServer requestServer;
 
     public static void main(String[] args) throws IOException {
-        /**
-         * preparing database from PersistenceMsg file
-         */
+        /** preparing database from PersistenceMsg file */
         Database.getPersistenceData();
 
-
-        /**
-         * initializing server
-         */
+        /** initializing server */
         Selector selector = Selector.open(); // selector is open here
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.bind(new InetSocketAddress("localhost", 12345));
         ssc.configureBlocking(false);
         int ops = ssc.validOps();
-
-        // SelectionKey: A token representing the registration of a SelectableChannel with a Selector.
-        // A selection key is created each time a channel is registered with a selector.
-        // A key remains valid until it is cancelled by invoking its cancel method, by closing its channel, or by closing its selector.
         SelectionKey selectKy = ssc.register(selector, ops, null);
 
 
@@ -70,7 +61,7 @@ public class Server {
                      * ANALYZING DATA RECEIVED
                      */
                     if(!dataReceived.equals("")){
-                        log("Other.Message received: " + dataReceived);
+                        log("received: " + dataReceived);
                         String[] infoReceivedArr = dataReceived.split(" ");
                         String firstWordReceived = infoReceivedArr[0];
 
@@ -83,7 +74,9 @@ public class Server {
                          */
                         if(dataReceived.endsWith(RequestServer.END)){
                             String body = dataReceived;
-                            requestServer.update(body); // updating request body with rest of the request
+
+                            requestServer.setBody(body);
+//                            requestServer.update(body); // updating request body with rest of the request
 
                             /**
                              * answer to client
@@ -91,6 +84,7 @@ public class Server {
                             SocketChannel client = (SocketChannel) myKey.channel();
                             ByteBuffer bufferAnswer = ByteBuffer.wrap(answer.getBytes());
 //                            answer = getAnswer();
+                            System.out.println(requestServer.getBody());
                             answer = ProcessingRequest.getAnswer(requestServer);
                             bufferAnswer = ByteBuffer.wrap(answer.getBytes());
                             client.write(bufferAnswer);

@@ -26,14 +26,6 @@ public abstract class Client {
         log("--- Connecting to ServerSide.Server on port 12345...");
     }
 
-    public void readingFromServer(SocketChannel clientChannel) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(256);
-        clientChannel.read(buffer);
-        answer = new String(buffer.array()).trim();
-        log("--- answer from server : " + answer);
-
-    }
-
     public void sendToServer(RequestClient requestClient) throws IOException, InterruptedException {
         for (String s : requestClient.getInfo()){
             byte[] message = s.getBytes();
@@ -46,6 +38,15 @@ public abstract class Client {
             Thread.sleep(1000);
         }
     }
+
+    public void readingFromServer(SocketChannel clientChannel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(256);
+        clientChannel.read(buffer);
+        answer = new String(buffer.array()).trim();
+        log("--- answer from server : " + answer);
+
+    }
+
 
     public void disconnectFromServer(SocketChannel clientChannel) throws IOException {
         clientChannel.close();

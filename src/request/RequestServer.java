@@ -19,7 +19,7 @@ public class RequestServer {
     private String type; // PUBLISH
     private String user; // user
     private String header; // PUBLISH author:@user
-    private String body; // msg
+    private String body = ""; // msg
 
     private String optionUser = "";
     private String optionTag = "";
@@ -31,7 +31,9 @@ public class RequestServer {
     // to iterate through when sending info from client to server
     private ArrayList<String> data = new ArrayList<>();
 
-
+    public void setBody(String body) {
+        this.body = body;
+    }
 
     /****************************
      * ****** CLIENT SIDE *******
@@ -42,7 +44,7 @@ public class RequestServer {
      * with infos asked to client
      * THE REQUEST MUST ENDED WITH "END" WORD
      */
-//    public Request() {
+//    public RequestServer() {
 //        String type = askInfo("TYPE"); // for example: PUBLISH
 //
 //        if (type.equals("PUBLISH")){
@@ -108,12 +110,12 @@ public class RequestServer {
 //            data.add(header);
 //        }
 //    }
-
-    public static String askInfo(String info){
-        System.out.print(info + " > ");
-        Scanner sc = new Scanner(System.in);
-        return sc.nextLine();
-    }
+//
+//    public static String askInfo(String info){
+//        System.out.print(info + " > ");
+//        Scanner sc = new Scanner(System.in);
+//        return sc.nextLine();
+//    }
 
 
 

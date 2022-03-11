@@ -167,13 +167,14 @@ public class ProcessingRequest {
                 answer = "ERROR : NO MESSAGE MATCHING THIS ID";
             }
         }
-        // TODO OOOOOOOOOOOOOOOOOOO
         else if (requestServer.getType().equals("CONNECT")){
-
-
             String[] dataReceived = requestServer.getHeader().split(" "); // CONNECT user:@user END
-            String user = dataReceived[1];
-            System.out.println(user + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            String user = dataReceived[1].split("user:@")[1];
+            System.out.println(user);
+
+            // first adding of user to stream list
+            Stream stream = new Stream(user,null,null);
+            Database.addSubscriptionStream(stream);
 
             if (user.equals("")){
                 answer = "ERROR";
@@ -181,9 +182,38 @@ public class ProcessingRequest {
             else{
                 answer = "OK";
             }
+        }
+        else if (requestServer.getType().equals("SUBSCRIBE")){ // SUBSCRIBE author:@user et SUBSCRIBE tag:#tag
+            String[] dataReceived = requestServer.getHeader().split(" ");
+            String user = dataReceived[1].split("user:@")[1];
+            String tag = dataReceived[1].split("tag:#")[1];
+
+            try{
+                Stream stream = Database.getStream();
+                stream.add(user);
+                stream.add(tag);
+                answer = "OK";
+            }
+            catch(Exception e){
+                answer = "ERROR";
+            }
+        }
+        else if (requestServer.getType().equals("UNSUBSCRIBE")){ // UNSUBSCRIBE author:@user et UNSUBSCRIBE tag:#tag
+            String[] dataReceived = requestServer.getHeader().split(" ");
+            String user = dataReceived[1].split("user:@")[1];
+            String tag = dataReceived[1].split("tag:#")[1];
+
+            try{
+                Stream stream = Database.getStream();
+                Database.getFullStream().remove(stream);
+                stream.add(tag);
+                answer = "OK";
+            }
+            catch(Exception e){
+                answer = "ERROR";
+            }
 
         }
-
         return answer;
     }
 

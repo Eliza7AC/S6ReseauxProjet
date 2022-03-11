@@ -56,6 +56,9 @@ in src directory, execute:
 2)  Client is launched (Publish Class for example) and a Request object is created
     with a header and possibly body and some others info if necessary.
     The "END" word delimits the end of the request.
+    Client Class is just an abstract class and each type of client (Publisher, Follower, Repost)
+    extends this class.
+    Same thing with RequestClient and PUBLISH, RCV_IDS, RCV_MSG, etc.
 
 3)  The server receives the data from the client (a String object from ByteBuffer)
     and analyzes it to recreate a request object.

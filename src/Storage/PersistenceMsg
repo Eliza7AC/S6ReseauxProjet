@@ -1,0 +1,39 @@
+// id,msg,user,replyToId
+0,bonjour,adeline,5
+1,hello,vincent,
+2,j'aime les sushis,kevin,6
+3,la fin est proche,Milouse,7
+4,coucou ça va,angel,9
+5,hey,antoine,10
+6,Cogito Ergo Sum,Descartes,8
+7,bonjour,angel,11
+8,conan,konnichiwa,7
+9,pouf,mo,4
+10,aie aie aie,me,2
+11,hellooooooooo,martin,3
+12,hey you there,angela,-1
+13,Gooooooooood morning night city,hélène,-1
+14,tak ,yoan,-1
+15,ma chere amie ,madeleine,-1
+16,heyyyyyyyyyyyyyezofjeiojf ,paulette,-1
+17,ah ah ah  ,manelle,-1
+18,l'oiseau est beau ,plume,-1
+19,fkepozfkozpfkopzefkopzkfpzkeof ,fpok,-1
+20,coucou ,margot,-1
+21,moi aussi j'aime bcp les sushis et les udon ,marjolaine,2
+22,parfait ! ,anthony,-1
+23,yummy ,myriam,-1
+24,bashi yun ,jitan,-1
+25,tak ,yok,-1
+26,bonjouuuuuuuuuur tout le monde ,angel,-1
+27,helllllooooo ,koukou,-1
+28,je ne suis pas un ange ,ange,-1
+29,rose ,angela,-1
+30,REPLY author:@koukou reply_to_id:5 ,koukou,5
+31,daccoooord ,tyty,4
+32,coucou ça va,author:@pop,-1
+33,la fin est proche,popey,-1
+34,j'aime les sushis,florence,-1
+35,la fin est proche,jade,-1
+36,je m'appelle jade ,jade,-1
+37,j'aime la philosophie ,henriette,-1

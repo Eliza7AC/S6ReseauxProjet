@@ -6,8 +6,9 @@ Angéline CHANOZ, Adam FARESSE
 ####### COMPTE RENDU #######
 ############################
 
-Le serveur est mono thread.
+Le serveur est mono thread dans la gestion des clients.
 L'utilisation des Selector a été mise en place pour pouvoir gérer plusieurs clients à la fois.
+La méthode SERVEURCONNECT est multi-thread: on crée un nouveau thread en créant un nouveau serveur (voir classe Server).
 
 
 >>> ClientSide <<<

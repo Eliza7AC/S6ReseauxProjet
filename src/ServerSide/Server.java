@@ -4,6 +4,8 @@ import Storage.Database;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -16,6 +18,9 @@ import request.RequestServer;
 public class Server {
 
     public static RequestServer requestServer;
+    public static int port = 12345;
+    // to get several servers running at once
+    public static int nbOfServers = 3;
 
     public static void main(String[] args) throws IOException {
         /** preparing database from PersistenceMsg file */
@@ -28,6 +33,15 @@ public class Server {
         ssc.configureBlocking(false);
         int ops = ssc.validOps();
         SelectionKey selectKy = ssc.register(selector, ops, null);
+
+
+        /** creating others servers
+         * in order to use several servers at once
+         * to get server federation
+         */
+        SERVEURCONNECT(nbOfServers);
+
+
 
 
         String answer = "plop";
@@ -136,6 +150,32 @@ public class Server {
             }
         }
         return false;
+    }
+
+    public static void SERVEURCONNECT(int nbOfServers){
+//        int nbOfServers = 3;
+        for (int i = 0; i < nbOfServers; i++) {
+
+            Thread SubServer = new Thread(new Runnable() {
+                public void run() {
+                    ServerSocket ServerSocketObject = null;
+                    while(true)
+                    {
+                        try {
+                            /** using different ports
+                             * one server = one port */
+                            port = port+1;
+                            ServerSocketChannel sscOther = ServerSocketChannel.open();
+                            sscOther.bind(new InetSocketAddress("localhost", port));
+                            sscOther.configureBlocking(false);
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+        }
     }
 
 }

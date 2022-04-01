@@ -1,6 +1,51 @@
 Projet Réseaux - L3 Informatique Groupe 1
-CHANOZ Angéline, Adam FARESSE
+Angéline CHANOZ, Adam FARESSE
 
+
+############################
+####### COMPTE RENDU #######
+############################
+
+Le serveur est mono thread.
+L'utilisation des Selector a été mise en place pour pouvoir gérer plusieurs clients à la fois.
+
+
+>>> ClientSide <<<
+
+Ce package regroupe les classes relatives au client (Follower, Publisher, etc.)
+
+>>> ServerSide <<<
+
+Ce package regroupe les classes relatives au serveur. La classe ProcessingRequest permet de traiter une requête.
+L'existence de cette classe permet d'alléger la classe Server.
+La méthode SERVEURCONNECT va créer un nouveau thread par nouveau serveur afin qu'il y ait plusieurs serveurs
+qui fonctionnent en même temps. Ils n'utilisent pas le même port. Le nombre de serveur est indiqué en attribut
+(nbOfServers) au préalable.
+
+>>> request <<<
+
+Ce package regroupe les différents types de requêtes.
+La classe mère est RequestClient qui extends les différents types de requêtes (PUBLISH, REPLY, etc.).
+Cette organisation a été mise en place dans le but de factoriser le code commun à toutes les requêtes
+(attributs header, body, type de la requête, demander au client les informations, etc.).
+La classe RequestServer permet de traiter une requête côté server.
+
+>>> DataNetwork <<<
+
+Ce package regroupe les différents objets qui sont censés représentés les informations transitant sur le réseau:
+Message, Stream, Subscription.
+
+>>> Storage <<<
+
+Ce package représente la base de données.
+Une base de données a été mise en place avec les fichiers Persistence.
+La classe Database se charge des opérations intermédiaires entre le serveur et la base de ajouts, tels que
+l'ajout, le retrait ou la modification des informations sauvegardés en base de données.
+Autre remarque: au démarrage du serveur, la base de données est chargée.
+
+
+
+############### MORE INFO ##############
 
 
 ########################################

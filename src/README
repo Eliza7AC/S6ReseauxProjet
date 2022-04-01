@@ -20,8 +20,10 @@ Ce package regroupe les classes relatives au client (Follower, Publisher, etc.)
 Ce package regroupe les classes relatives au serveur. La classe ProcessingRequest permet de traiter une requête.
 L'existence de cette classe permet d'alléger la classe Server.
 La méthode SERVEURCONNECT va créer un nouveau thread par nouveau serveur afin qu'il y ait plusieurs serveurs
-qui fonctionnent en même temps. Ils n'utilisent pas le même port. Le nombre de serveur est indiqué en attribut
-(nbOfServers) au préalable.
+qui fonctionnent en même temps.
+Ils n'utilisent pas le même port.
+Le nombre de serveur est indiqué en attribut (nbOfServers) au préalable
+ou bien récupéré en scannant le fichier pairs.cfg
 
 >>> request <<<
 

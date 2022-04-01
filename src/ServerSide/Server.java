@@ -2,7 +2,7 @@ package ServerSide;
 
 import Storage.Database;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,13 +18,21 @@ import request.RequestServer;
 public class Server {
 
     public static RequestServer requestServer;
-    public static int port = 12345;
-    // to get several servers running at once
-    public static int nbOfServers = 3;
+    public static int port = 12345; // changing while scanning pairs.cfg
+    public static int nbOfServers = 0; // to get several servers running at once
 
     public static void main(String[] args) throws IOException {
         /** preparing database from PersistenceMsg file */
         Database.getPersistenceData();
+
+
+        /**
+         * preparing config server
+         * to get server federation
+         */
+        File fileConfigServer = new File("ServerSide/pairs.cfg");
+        LookForConfigServer(fileConfigServer);
+
 
         /** initializing server */
         Selector selector = Selector.open(); // selector is open here
@@ -176,6 +184,24 @@ public class Server {
                 }
             });
         }
+    }
+
+
+    public static void LookForConfigServer(File file) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line = null;
+
+        int masterPort = 0;
+        int nLine = 0;
+        while ((line = br.readLine()) != null){
+            if (nLine==0){
+                String[] firstLine = line.split(" ");
+                masterPort = Integer.parseInt(firstLine[3]); // master = localhost 12345
+            }
+            nLine++;
+        }
+        port = masterPort;
+        nbOfServers = nLine;
     }
 
 }
